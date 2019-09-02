@@ -8,6 +8,7 @@ import ProductDetailsDrawer from '../../components/ProductDetailsDrawer/ProductD
 import ProductModalDrawer from '../../components/ProductModalDrawer/ProductModalDrawer';
 import RowStock from '../../components/rowStock';
 
+const { Search } = Input;
 const menu = (
   <Menu>
     <Menu.Item>
@@ -24,7 +25,7 @@ const menu = (
 
 class ProductView extends Component {
   state = {
-    pagination: {},
+    barcode: '',
     loading: false,
     searchText: ''
   };
@@ -85,14 +86,6 @@ class ProductView extends Component {
   handleReset = clearFilters => {
     clearFilters();
     this.setState({ searchText: '' });
-  };
-
-  handleTableChange = (pagination, filters, sorter) => {
-    const pager = { ...this.state.pagination };
-    pager.current = pagination.current;
-    this.setState({
-      pagination: pager
-    });
   };
 
   showProduct = event => {
@@ -172,22 +165,24 @@ class ProductView extends Component {
     }
   ];
 
+  addProduct = value => {
+    this.props.dispatch({ type: 'ADD_PRODUCT', barcode: value });
+  };
+
   render() {
-    console.log(this.props);
     return (
       <>
         <LayoutContentWrapper className='h-25 pb-0'>
           <LayoutContent>
-            {/* <div>Add Product by Barcode</div> */}
-            <Input
-              prefix={<Icon type='barcode' style={{ color: 'rgba(0,0,0,.25)' }} />}
+            <Search
               placeholder='Barcode'
+              enterButton='Add'
               size='large'
-              // value={product.gtin}
-              autoFocus
-              name='barcode'
-              id='barcode'
+              onSearch={this.addProduct}
+              prefix={<Icon type='barcode' style={{ color: 'rgba(0,0,0,.25)' }} />}
             />
+
+            <div className='mt-3'>Add Product by Barcode</div>
           </LayoutContent>
         </LayoutContentWrapper>
         <LayoutContentWrapper className='h-100'>
@@ -199,7 +194,6 @@ class ProductView extends Component {
               rowKey={record => record.gtin}
               dataSource={this.props.Products.all}
               loading={this.state.loading}
-              onChange={this.handleTableChange}
             />
           </LayoutContent>
         </LayoutContentWrapper>
