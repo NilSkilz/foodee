@@ -15,6 +15,7 @@ import { siteConfig } from '../../settings';
 import { AppLocale } from '../../dashApp';
 import themes from '../../settings/themes';
 import AppHolder from './commonStyle';
+import DataLoader from '../../data';
 import './global.css';
 
 const { Content, Footer } = Layout;
@@ -54,6 +55,7 @@ export class App extends Component {
                         position: 'relative'
                       }}>
                       <AppRouter url={url} />
+                      <DataLoader />
                     </Content>
                     <Footer
                       style={{

@@ -11,7 +11,7 @@ const routes = [
   // },
   {
     path: 'products',
-    component: asyncComponent(() => import('./containers/products'))
+    component: asyncComponent(() => import('./containers/Products/products'))
   }
 ];
 export default routes;

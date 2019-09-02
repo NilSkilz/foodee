@@ -61,25 +61,19 @@ app.get('/api/products/:barcode', (req, res) => {
 });
 
 app.get('/api/products/', (req, res) => {
-  console.log(req.query);
-  Product.countDocuments(req.query.where)
+  Product.find(req.query.where)
+    .populate({
+      path: 'stock',
+      match: { consumed_date: { $exists: false } }
+    })
+    // .limit(parseInt(req.query.limit))
+    // .skip(parseInt(req.query.skip))
+    // .sort(req.query.sort)
     .exec()
-    .then(count => {
-      Product.find(req.query.where)
-        .populate({
-          path: 'stock',
-          match: { consumed_date: { $exists: false } }
-        })
-        .limit(parseInt(req.query.limit))
-        .skip(parseInt(req.query.skip))
-        .sort(req.query.sort)
-        .exec()
-        .then(products => {
-          res.send({
-            total: count,
-            results: products
-          });
-        });
+    .then(products => {
+      res.send({
+        results: products
+      });
     })
     .catch(err => handleError(err));
 });

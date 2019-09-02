@@ -37,5 +37,5 @@ export default {
   YoutubeSearch,
   Articles,
   Investors,
-  ...DevReducers,
+  ...DevReducers
 };

@@ -1,0 +1,10 @@
+{"_id":{"$oid":"5d49bfe279b584ba3baa96d0"},"name":"Food Cupboard","__v":0}
+{"_id":{"$oid":"5d50815958682f5a111e6169"},"name":"Fresh Food","__v":0}
+{"_id":{"$oid":"5d53303086d3d546447fefc3"},"name":"Household","__v":0}
+{"_id":{"$oid":"5d53304486d3d546447fefca"},"name":"Health & Beauty","__v":0}
+{"_id":{"$oid":"5d5330fe86d3d546447fefdf"},"name":"Drinks","__v":0}
+{"_id":{"$oid":"5d6ab9e4679b2710a4d5bdb8"},"name":"Frozen Food","__v":0}
+{"_id":{"$oid":"5d6aba07679b2710a4d5bdbd"},"name":"Bakery","__v":0}
+{"_id":{"$oid":"5d6accd9a5cabe1ec5c3bd03"},"name":"5d53304486d3d546447fefca","__v":0}
+{"_id":{"$oid":"5d6ad3ffa5cabe1ec5c3bdc5"},"name":"5d53303086d3d546447fefc3","__v":0}
+{"_id":{"$oid":"5d6ad5a8a5cabe1ec5c3be3f"},"name":"Pets","__v":0}

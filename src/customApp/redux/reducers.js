@@ -1,3 +1,5 @@
-import githubSearch from './githubSearch/reducers';
+import Products from './products/products';
+import Departments from './departments/departments';
+import SuperDepartments from './super-departments/super-departments';
 
-export default { githubSearch };
+export default { Products, Departments, SuperDepartments };

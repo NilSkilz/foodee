@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Table, Icon, Menu, Dropdown, Button, Input } from 'antd';
-import Axios from 'axios';
 import moment from 'moment';
-import LayoutContentWrapper from '../../components/utility/layoutWrapper.js';
-import LayoutContent from '../../components/utility/layoutContent';
-import Badge from '../../containers/Uielements/Badge/badge.style';
-import RowStock from '../components/rowStock';
+import LayoutContentWrapper from '../../../components/utility/layoutWrapper.js';
+import LayoutContent from '../../../components/utility/layoutContent';
+import ProductDetailsDrawer from '../../components/ProductDetailsDrawer/ProductDetailsDrawer';
+import ProductModalDrawer from '../../components/ProductModalDrawer/ProductModalDrawer';
+import RowStock from '../../components/rowStock';
 
 const menu = (
   <Menu>
@@ -21,16 +22,19 @@ const menu = (
   </Menu>
 );
 
-export default class ProductView extends Component {
+class ProductView extends Component {
   state = {
-    data: [],
     pagination: {},
     loading: false,
     searchText: ''
   };
 
-  componentDidMount() {
-    this.fetch();
+  componentWillReceiveProps(props) {
+    console.log(props);
+  }
+
+  componentDidUpdate() {
+    console.log(this.props);
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -76,23 +80,11 @@ export default class ProductView extends Component {
     confirm();
     console.log(selectedKeys);
     this.setState({ searchText: selectedKeys[0] });
-
-    this.fetch({
-      results: 10,
-      page: 1,
-      searchQuery: selectedKeys[0]
-    });
   };
 
   handleReset = clearFilters => {
     clearFilters();
     this.setState({ searchText: '' });
-
-    this.fetch({
-      results: 10,
-      page: 1,
-      searchQuery: null
-    });
   };
 
   handleTableChange = (pagination, filters, sorter) => {
@@ -101,44 +93,26 @@ export default class ProductView extends Component {
     this.setState({
       pagination: pager
     });
-    this.fetch({
-      results: pagination.pageSize,
-      page: pagination.current,
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      ...filters
-    });
   };
 
-  fetch = (
-    params = {
-      results: 10,
-      page: 1,
-      sortField: null,
-      searchQuery: null
-    }
-  ) => {
-    console.log('params:', params);
-    this.setState({ loading: true });
+  showProduct = event => {
+    const { id } = event.target;
+    const product = this.props.Products.all.find(p => p._id === id);
+    if (product)
+      this.props.dispatch({
+        type: 'SHOW_PRODUCT',
+        product
+      });
+  };
 
-    let url = `/api/products?limit=${params.results}&skip=${(params.page - 1) * 10}`;
-    if (params.sortField) url = `${url}&sort[${params.sortField}]=${params.sortOrder === 'ascend' ? '1' : '-1'}`;
-
-    if (params.searchQuery) url = `${url}&where[name][$regex]=${params.searchQuery}&where[name][$options]=i`;
-
-    Axios.get(url)
-      .then(({ data }) => {
-        console.log('data:', data);
-        const pagination = { ...this.state.pagination };
-        // Read total count from server
-        pagination.total = data.total;
-        this.setState({
-          loading: false,
-          data: data.results,
-          pagination
-        });
-      })
-      .catch(err => console.log(err));
+  editProduct = event => {
+    const { id } = event.target;
+    const product = this.props.Products.all.find(p => p._id === id);
+    if (product)
+      this.props.dispatch({
+        type: 'EDIT_PRODUCT',
+        product
+      });
   };
 
   columns = [
@@ -149,21 +123,23 @@ export default class ProductView extends Component {
         if (product.stock.length > 0) return <RowStock status='warning' />;
         return <RowStock status='error' />;
       },
-      className: 'p-0',
-      width: '1%'
+      className: 'p-0'
     },
     {
       title: 'Name',
-      dataIndex: 'name',
       sorter: true,
-      // render: name => `${name.first} ${name.last}`,
-      // width: '35%',
+      render: product => {
+        return (
+          <div onClick={this.showProduct} id={product._id}>
+            {product.name}
+          </div>
+        );
+      },
       ...this.getColumnSearchProps('name')
     },
     {
       title: 'Stock',
-      render: product => product.stock.length,
-      width: '1%'
+      render: product => product.stock.length
     },
     {
       title: 'Best Before',
@@ -174,8 +150,7 @@ export default class ProductView extends Component {
           return bestBefore.fromNow();
         }
         return '-';
-      },
-      width: '14%'
+      }
     },
     {
       title: 'Action',
@@ -183,18 +158,14 @@ export default class ProductView extends Component {
       width: '16%',
       align: 'center',
       className: 'mr-0 pr-0 pl-0',
-      render: (text, record) => (
+      render: product => (
         <span>
-          {/* <a>Action 一 {record.name}</a>
-          <Divider type='vertical' />
-          <a>Delete</a>
-          <Divider type='vertical' /> */}
           <Dropdown className='ml-3' overlay={menu}>
             <a className='ant-dropdown-link' href='#'>
               <Icon type='more' />
             </a>
           </Dropdown>
-          <Button className='ml-3' icon='edit' type='link'></Button>
+          <Button className='ml-3' icon='edit' type='link' onClick={this.editProduct} id={product._id}></Button>
           <Button className='ml-3 mr-0' icon='delete' type='link'></Button>
         </span>
       )
@@ -202,20 +173,45 @@ export default class ProductView extends Component {
   ];
 
   render() {
+    console.log(this.props);
     return (
-      <LayoutContentWrapper className='h-100'>
-        <LayoutContent>
-          <Table
-            // className='p-3'
-            columns={this.columns}
-            rowKey={record => record.gtin}
-            dataSource={this.state.data}
-            pagination={this.state.pagination}
-            loading={this.state.loading}
-            onChange={this.handleTableChange}
-          />
-        </LayoutContent>
-      </LayoutContentWrapper>
+      <>
+        <LayoutContentWrapper className='h-25 pb-0'>
+          <LayoutContent>
+            {/* <div>Add Product by Barcode</div> */}
+            <Input
+              prefix={<Icon type='barcode' style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder='Barcode'
+              size='large'
+              // value={product.gtin}
+              autoFocus
+              name='barcode'
+              id='barcode'
+            />
+          </LayoutContent>
+        </LayoutContentWrapper>
+        <LayoutContentWrapper className='h-100'>
+          <LayoutContent>
+            <ProductDetailsDrawer />
+            <ProductModalDrawer />
+            <Table
+              columns={this.columns}
+              rowKey={record => record.gtin}
+              dataSource={this.props.Products.all}
+              loading={this.state.loading}
+              onChange={this.handleTableChange}
+            />
+          </LayoutContent>
+        </LayoutContentWrapper>
+      </>
     );
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    Products: state.Products
+  };
+};
+
+export default connect(mapStateToProps)(ProductView);
