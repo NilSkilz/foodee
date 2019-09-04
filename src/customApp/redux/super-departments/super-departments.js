@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const initState = [];
 
 export default function(state = initState, action) {

@@ -5,7 +5,7 @@ import moment from 'moment';
 import LayoutContentWrapper from '../../../components/utility/layoutWrapper.js';
 import LayoutContent from '../../../components/utility/layoutContent';
 import ProductDetailsDrawer from '../../components/ProductDetailsDrawer/ProductDetailsDrawer';
-import ProductModalDrawer from '../../components/ProductModalDrawer/ProductModalDrawer';
+import ProductModal from '../../components/ProductModal/ProductModal';
 import RowStock from '../../components/rowStock';
 
 const { Search } = Input;
@@ -90,7 +90,7 @@ class ProductView extends Component {
 
   showProduct = event => {
     const { id } = event.target;
-    const product = this.props.Products.all.find(p => p._id === id);
+    const product = this.props.products.find(p => p._id === id);
     if (product)
       this.props.dispatch({
         type: 'SHOW_PRODUCT',
@@ -100,7 +100,7 @@ class ProductView extends Component {
 
   editProduct = event => {
     const { id } = event.target;
-    const product = this.props.Products.all.find(p => p._id === id);
+    const product = this.props.products.find(p => p._id === id);
     if (product)
       this.props.dispatch({
         type: 'EDIT_PRODUCT',
@@ -166,10 +166,11 @@ class ProductView extends Component {
   ];
 
   addProduct = value => {
-    this.props.dispatch({ type: 'ADD_PRODUCT', barcode: value });
+    this.props.dispatch({ type: 'PRODUCT_CREATE', barcode: value });
   };
 
   render() {
+    console.log(this.props.products);
     return (
       <>
         <LayoutContentWrapper className='h-25 pb-0'>
@@ -188,11 +189,11 @@ class ProductView extends Component {
         <LayoutContentWrapper className='h-100'>
           <LayoutContent>
             <ProductDetailsDrawer />
-            <ProductModalDrawer />
+            <ProductModal />
             <Table
               columns={this.columns}
               rowKey={record => record.gtin}
-              dataSource={this.props.Products.all}
+              dataSource={this.props.products}
               loading={this.state.loading}
             />
           </LayoutContent>
@@ -204,7 +205,7 @@ class ProductView extends Component {
 
 const mapStateToProps = state => {
   return {
-    Products: state.Products
+    products: state.Products.all
   };
 };
 

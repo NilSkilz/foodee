@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Row } from 'reactstrap';
-import { Drawer, Form, Icon, Checkbox, Button, Input, InputNumber, Select } from 'antd';
+import { Modal, Form, Icon, Button, Input, InputNumber, Select } from 'antd';
 import moment from 'moment';
 
 const { Option } = Select;
 
-class ProductModalDrawer extends Component {
+class ProductModal extends Component {
+  state = { prodcut: null };
+  componentWillReceiveProps(props) {
+    const { editing: product } = props;
+    if (product) this.setState({ product });
+  }
+
   onClose = () => {
+    this.setState({ product: null });
     this.props.dispatch({
       type: 'EDIT_PRODUCT',
       product: null
@@ -34,21 +41,58 @@ class ProductModalDrawer extends Component {
     return 'n/a';
   };
 
-  render() {
-    const { editing: product, departments, superDepartments } = this.props;
+  handleStockChange = value => {
+    const { product } = this.state;
+    product.minimum_stock = value;
+    this.setState({ product });
+  };
 
-    // const { getFieldDecorator } = this.props.form;
+  handlePriceChange = value => {
+    const { product } = this.state;
+    product.price = value;
+    this.setState({ product });
+  };
+
+  handleChange = event => {
+    const { product } = this.state;
+    product[event.target.id] = event.target.value;
+    this.setState({ product });
+  };
+
+  selectDepartment = value => {
+    const { product } = this.state;
+    product.department = value;
+    this.setState({ product });
+  };
+
+  selectSuperDepartment = value => {
+    const { product } = this.state;
+    product.superDepartment = value;
+    this.setState({ product });
+  };
+
+  render() {
+    const { departments, superDepartments } = this.props;
+    const { product } = this.state;
 
     if (product) {
       return (
-        <Drawer
+        <Modal
           title={product.name}
-          placement='right'
           closable={false}
           visible={product}
           onClose={this.onClose}
-          width='80%'>
-          <Form onSubmit={this.handleSubmit} className='login-form'>
+          footer={[
+            <Button key='Cancel' onClick={this.onClose}>
+              Cancel
+            </Button>,
+            <Button key='Save' type='primary' loading={false} onClick={this.save}>
+              Save
+            </Button>
+          ]}
+          // width='80%'
+        >
+          <Form onSubmit={this.handleSubmit} className=''>
             <Form.Item className='p-0 m-0 mb-2'>
               <div className='p-0 m-0' for='department'>
                 Barcode
@@ -58,9 +102,10 @@ class ProductModalDrawer extends Component {
                 placeholder='Barcode'
                 size='large'
                 value={product.gtin}
+                onChange={this.handleChange}
                 autoFocus
-                name='barcode'
-                id='barcode'
+                name='gtin'
+                id='gtin'
               />
             </Form.Item>
             <Form.Item className='p-0 m-0 mb-2'>
@@ -87,8 +132,9 @@ class ProductModalDrawer extends Component {
                   id='price'
                   name='price'
                   size='large'
+                  step={0.01}
                   value={product.price}
-                  onChangeEvent={this.handleChange}
+                  onChange={this.handlePriceChange}
                 />
               </Form.Item>
               <Form.Item className='p-0 m-0 mb-2 col-6'>
@@ -103,7 +149,7 @@ class ProductModalDrawer extends Component {
                   size='large'
                   value={product.minimum_stock}
                   defaultValue={2}
-                  onChangeEvent={this.handleChange}
+                  onChange={this.handleStockChange}
                 />
               </Form.Item>
             </Row>
@@ -111,7 +157,11 @@ class ProductModalDrawer extends Component {
               <div className='p-0 m-0' for='department'>
                 Department
               </div>
-              <Select defaultValue='Select Department' onChange={this.handleChange} size='large'>
+              <Select
+                defaultValue='Select Department'
+                onChange={this.selectDepartment}
+                size='large'
+                value={product.department && departments.find(d => d._id === product.department).name}>
                 {departments.map(d => (
                   <Option value={d._id}>{d.name}</Option>
                 ))}
@@ -121,19 +171,18 @@ class ProductModalDrawer extends Component {
               <div className='p-0 m-0' for='superDepartment'>
                 Category
               </div>
-              <Select defaultValue='Select Category' onChange={this.handleChange} size='large'>
+              <Select
+                defaultValue='Select Category'
+                onChange={this.selectSuperDepartment}
+                size='large'
+                value={product.superDepartment && superDepartments.find(sd => sd._id === product.superDepartment).name}>
                 {superDepartments.map(d => (
                   <Option value={d._id}>{d.name}</Option>
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item className='pt-3 m-0'>
-              <Button type='primary' htmlType='submit'>
-                Create
-              </Button>
-            </Form.Item>
           </Form>
-        </Drawer>
+        </Modal>
       );
     } else {
       return null;
@@ -149,4 +198,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps)(ProductModalDrawer);
+export default connect(mapStateToProps)(ProductModal);

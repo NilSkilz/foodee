@@ -59,7 +59,7 @@ const ForgotPasswordStyleWrapper = styled.div`
         font-weight: 300;
         line-height: 1;
         text-transform: uppercase;
-        color: ${palette('secondary', 2)};
+        color: #fff; //${palette('secondary', 2)};
       }
     }
 

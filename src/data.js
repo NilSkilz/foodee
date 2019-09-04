@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import Axios from 'axios';
 
@@ -18,7 +18,7 @@ class DataLoader extends Component {
   getProducts = () => {
     Axios.get('/api/products').then(({ data }) => {
       this.props.dispatch({
-        type: 'ADD_PRODUCTS',
+        type: 'PRODUCT_FETCH_ALL',
         products: data.results
       });
       this.setState({ products: data.data });

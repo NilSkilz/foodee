@@ -2,9 +2,9 @@ export default {
   apiUrl: 'http://yoursite.com/api/'
 };
 const siteConfig = {
-  siteName: 'ISOMORPHIC',
+  siteName: 'Foodee',
   siteIcon: 'ion-flash',
-  footerText: 'Isomorphic ©2017 Created by RedQ, Inc'
+  footerText: 'Foodee ©2019 Created by Rob Stokes, LimeNinja'
 };
 
 const themeConfig = {

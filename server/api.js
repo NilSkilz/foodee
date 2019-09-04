@@ -38,13 +38,7 @@ handleError = error => {
 // ------------
 
 app.get('/api/products/:barcode', (req, res) => {
-  query = {};
-  if (req.params.barcode.length === 13) {
-    query = { gtin: '0' + req.params.barcode };
-  } else {
-    query = { _id: req.params.barcode };
-  }
-  Product.findOne(query)
+  Product.findOne({ gtin: req.params.barcode })
     .populate({
       path: 'stock',
       match: { consumed_date: { $exists: false } }

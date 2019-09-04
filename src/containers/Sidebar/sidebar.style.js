@@ -30,7 +30,7 @@ const SidebarWrapper = styled.div`
 
     .isoLogoWrapper {
       height: 70px;
-      background: rgba(0, 0, 0, 0.3);
+      background: #fff; //rgba(0, 0, 0, 0.3);
       margin: 0;
       padding: 0 10px;
       text-align: center;
@@ -92,8 +92,7 @@ const SidebarWrapper = styled.div`
         i {
           font-size: 19px;
           color: inherit;
-          margin: ${props =>
-            props['data-rtl'] === 'rtl' ? '0 0 0 30px' : '0 30px 0 0'};
+          margin: ${props => (props['data-rtl'] === 'rtl' ? '0 0 0 30px' : '0 30px 0 0')};
           width: 18px;
           ${transition()};
         }
@@ -197,10 +196,8 @@ const SidebarWrapper = styled.div`
       .ant-menu-inline,
       .ant-menu-submenu-vertical {
         > li:not(.ant-menu-item-group) {
-          padding-left: ${props =>
-            props['data-rtl'] === 'rtl' ? '0px !important' : '74px !important'};
-          padding-right: ${props =>
-            props['data-rtl'] === 'rtl' ? '74px !important' : '0px !important'};
+          padding-left: ${props => (props['data-rtl'] === 'rtl' ? '0px !important' : '74px !important')};
+          padding-right: ${props => (props['data-rtl'] === 'rtl' ? '74px !important' : '0px !important')};
           font-size: 13px;
           font-weight: 400;
           margin: 0;
@@ -239,7 +236,7 @@ const SidebarWrapper = styled.div`
         display: none;
       }
 
-      .ant-menu-submenu-inline >  {
+      .ant-menu-submenu-inline > {
         .ant-menu-submenu-title:after {
           display: none;
         }
