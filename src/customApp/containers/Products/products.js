@@ -203,10 +203,8 @@ class ProductView extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    products: state.Products.all
-  };
-};
+const mapStateToProps = state => ({
+  products: state.Products.all
+});
 
 export default connect(mapStateToProps)(ProductView);

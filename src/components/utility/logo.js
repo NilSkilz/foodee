@@ -16,7 +16,7 @@ export default ({ collapsed }) => {
       ) : (
         <h3>
           <Link to='/dashboard'>
-            <img width='60%' src='/images/Foodee.svg' alt='logo' />
+            <img width='60%' src='/images/Foodee.png' alt='logo' />
           </Link>
         </h3>
       )}

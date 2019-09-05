@@ -21,24 +21,22 @@ class DataLoader extends Component {
         type: 'PRODUCT_FETCH_ALL',
         products: data.results
       });
-      this.setState({ products: data.data });
     });
   };
 
   getRecipes = () => {
     Axios.get('/api/recipes').then(({ data }) => {
       this.props.dispatch({
-        type: 'ADD_RECIPES',
-        recipes: data.data
+        type: 'RECIPE_FETCH_ALL',
+        recipes: data.results
       });
-      this.setState({ recipes: data.data });
     });
   };
 
   getLogs = () => {
     Axios.get('/api/logs').then(({ data }) => {
       this.props.dispatch({
-        type: 'ADD_LOGS',
+        type: 'LOGS_FETCH_ALL',
         logs: data.data
       });
       this.setState({ logs: data.data });

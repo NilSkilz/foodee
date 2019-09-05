@@ -262,7 +262,8 @@ app.post('/api/stock', (req, res) => {
 
 app.get('/api/logs', (req, res) => {
   Log.find({})
-    .sort({ created_at: -1 })
+    .limit(40)
+    .sort({ created_at: 1 })
     .exec()
     .then(logs => {
       res.send({
@@ -276,19 +277,14 @@ app.get('/api/logs', (req, res) => {
 // ------------
 
 app.get('/api/recipes', (req, res) => {
-  Recipe.countDocuments()
+  Recipe.find()
     .exec()
-    .then(count => {
-      Recipe.find()
-        .exec()
-        .then(recipes => {
-          res.send({
-            total: count,
-            page: 1,
-            data: recipes
-          });
-        })
-        .catch(err => handleError(err));
+    .then(recipes => {
+      res.send({
+        total: recipes.length,
+        page: 1,
+        results: recipes
+      });
     })
     .catch(err => handleError(err));
 });

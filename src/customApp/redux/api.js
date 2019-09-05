@@ -3,7 +3,9 @@ import _ from 'lodash';
 const DEFAULT_SETTINGS = {
   products: [],
   recipes: [],
-  departments: []
+  departments: [],
+  superDepartments: [],
+  logs: []
 };
 
 function getState() {
@@ -56,6 +58,7 @@ const rootReducer = (state = getState(), action) => {
     }
 
     case 'ADD_LOGS': {
+      debugger;
       return { ...state, logs: action.logs };
     }
 

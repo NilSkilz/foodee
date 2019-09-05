@@ -1,5 +1,7 @@
 import Products from './products/reducers';
+import Logs from './logs/reducers';
+import Recipes from './recipes/reducers';
 import Departments from './departments/departments';
 import SuperDepartments from './super-departments/super-departments';
 
-export default { Products, Departments, SuperDepartments };
+export default { Products, Departments, SuperDepartments, Logs, Recipes };
