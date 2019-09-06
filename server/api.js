@@ -1,14 +1,14 @@
-var express = require('express');
+var express = require("express");
 var app = express();
-var http = require('http').createServer(app);
-var _ = require('lodash');
-var mongoose = require('mongoose');
-var Jimp = require('jimp');
-var nocr = require('nocr');
-var async = require('async');
-var moment = require('moment');
+var http = require("http").createServer(app);
+var _ = require("lodash");
+var mongoose = require("mongoose");
+var Jimp = require("jimp");
+var nocr = require("nocr");
+var async = require("async");
+var moment = require("moment");
 
-var bodyParser = require('body-parser');
+var bodyParser = require("body-parser");
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(
   bodyParser.urlencoded({
@@ -18,16 +18,16 @@ app.use(
 );
 
 // Connect to database
-const uri = 'mongodb://127.0.0.1/grocy-dev';
+const uri = "mongodb://127.0.0.1/grocy-dev";
 
 mongoose.connect(uri, {});
 
-var Product = require('./product/product.model');
-var Stock = require('./stock/stock.model');
-var Department = require('./department/department.model');
-var SuperDepartment = require('./superdepartment/superdepartment.model');
-var Recipe = require('./recipe/recipe.model');
-var Log = require('./log/log.model');
+var Product = require("./product/product.model");
+var Stock = require("./stock/stock.model");
+var Department = require("./department/department.model");
+var SuperDepartment = require("./superdepartment/superdepartment.model");
+var Recipe = require("./recipe/recipe.model");
+var Log = require("./log/log.model");
 
 handleError = error => {
   console.log(error);
@@ -37,10 +37,10 @@ handleError = error => {
 //  Products
 // ------------
 
-app.get('/api/products/:barcode', (req, res) => {
+app.get("/api/products/:barcode", (req, res) => {
   Product.findOne({ gtin: req.params.barcode })
     .populate({
-      path: 'stock',
+      path: "stock",
       match: { consumed_date: { $exists: false } }
     })
     .exec()
@@ -54,10 +54,10 @@ app.get('/api/products/:barcode', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.get('/api/products/', (req, res) => {
+app.get("/api/products/", (req, res) => {
   Product.find(req.query.where)
     .populate({
-      path: 'stock',
+      path: "stock",
       match: { consumed_date: { $exists: false } }
     })
     // .limit(parseInt(req.query.limit))
@@ -72,7 +72,7 @@ app.get('/api/products/', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put("/api/products/:id", (req, res) => {
   Product.findByIdAndUpdate(req.params.id, req.body)
     .exec()
     .then(data => {
@@ -83,15 +83,15 @@ app.put('/api/products/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete("/api/products/:id", (req, res) => {
   Product.findByIdAndDelete(req.params.id)
     .exec()
     .then(res.status(204).send())
     .catch(err => handleError(err));
 });
 
-app.post('/api/products', (req, res) => {
-  console.log('New Product: ', req.body);
+app.post("/api/products", (req, res) => {
+  console.log("New Product: ", req.body);
   const { department, superDepartment } = req.body;
 
   getDepartment(department)
@@ -164,9 +164,9 @@ getSuperDepartment = superDepartmentName => {
 getBestBeforeDate = (image, id) => {
   return new Promise((resolve, reject) => {
     if (!image) resolve(null);
-    Jimp.read(image.replace('http', 'https').replace('90x90', '540x540'))
+    Jimp.read(image.replace("http", "https").replace("90x90", "540x540"))
       .then(image => {
-        const filename = id ? `images/${id}.png` : 'images/best-before.png';
+        const filename = id ? `images/${id}.png` : "images/best-before.png";
         image
           .crop(363, 0, 177, 177)
           .writeAsync(filename)
@@ -174,21 +174,25 @@ getBestBeforeDate = (image, id) => {
             nocr.decodeFile(filename, function(error, data) {
               if (error) return resolve(null);
               if (data) {
-                const str = data.replace(/\s/g, '');
+                const str = data.replace(/\s/g, "");
 
-                if (str === 'Bestsameday') return resolve({ unit: 'days', value: 1 });
+                if (str === "Bestsameday")
+                  return resolve({ unit: "days", value: 1 });
 
-                if (str.split('+').length === 2) {
-                  const value = str.split('+')[0];
-                  const unit = str.split('+')[1];
-                  if (parseInt(value) !== NaN && (unit === 'days' || unit === 'weeks')) {
+                if (str.split("+").length === 2) {
+                  const value = str.split("+")[0];
+                  const unit = str.split("+")[1];
+                  if (
+                    parseInt(value) !== NaN &&
+                    (unit === "days" || unit === "weeks")
+                  ) {
                     return resolve({ unit, value });
                   } else {
-                    console.log('not recognised', str);
+                    console.log("not recognised", str);
                     resolve(null);
                   }
                 } else {
-                  console.log('cant split', str);
+                  console.log("cant split", str);
                   resolve(null);
                 }
               } else {
@@ -210,7 +214,7 @@ getBestBeforeDate = (image, id) => {
 //  Stocks
 // ------------
 
-app.put('/api/stock/:id', (req, res) => {
+app.put("/api/stock/:id", (req, res) => {
   Stock.findByIdAndUpdate(req.params.id, req.body)
     .exec()
     .then(stock => {
@@ -233,7 +237,7 @@ app.put('/api/stock/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.post('/api/stock', (req, res) => {
+app.post("/api/stock", (req, res) => {
   req.body._id = new mongoose.Types.ObjectId();
   new Stock(req.body)
     .save()
@@ -260,10 +264,10 @@ app.post('/api/stock', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.get('/api/logs', (req, res) => {
+app.get("/api/logs", (req, res) => {
   Log.find({})
     .limit(40)
-    .sort({ created_at: 1 })
+    .sort({ created_at: -1 })
     .exec()
     .then(logs => {
       res.send({
@@ -276,7 +280,7 @@ app.get('/api/logs', (req, res) => {
 //  Recipes
 // ------------
 
-app.get('/api/recipes', (req, res) => {
+app.get("/api/recipes", (req, res) => {
   Recipe.find()
     .exec()
     .then(recipes => {
@@ -289,7 +293,7 @@ app.get('/api/recipes', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.post('/api/recipes', (req, res) => {
+app.post("/api/recipes", (req, res) => {
   new Recipe(req.body)
     .save()
     .then(recipe => {
@@ -303,7 +307,7 @@ app.post('/api/recipes', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.put('/api/recipes/:id', (req, res) => {
+app.put("/api/recipes/:id", (req, res) => {
   Recipe.findByIdAndUpdate(req.params.id, req.body)
     .exec()
     .then(recipe => {
@@ -316,7 +320,7 @@ app.put('/api/recipes/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.delete('/api/recipes/:id', (req, res) => {
+app.delete("/api/recipes/:id", (req, res) => {
   Recipe.findByIdAndDelete(req.params.id)
     .exec()
     .then(res.status(204).send())
@@ -327,7 +331,7 @@ app.delete('/api/recipes/:id', (req, res) => {
 //  Departments
 // ------------
 
-app.get('/api/departments', (req, res) => {
+app.get("/api/departments", (req, res) => {
   Department.find()
     .exec()
     .then(departments => {
@@ -339,7 +343,7 @@ app.get('/api/departments', (req, res) => {
     });
 });
 
-app.get('/api/superdepartments', (req, res) => {
+app.get("/api/superdepartments", (req, res) => {
   SuperDepartment.find()
     .exec()
     .then(departments => {
@@ -351,16 +355,16 @@ app.get('/api/superdepartments', (req, res) => {
     });
 });
 
-app.get('/api/auth', function(req, res) {
+app.get("/api/auth", function(req, res) {
   res.json(user);
 });
 
-app.post('/api/auth/login', function(req, res) {
+app.post("/api/auth/login", function(req, res) {
   user = _.cloneDeep(LOGGED_IN_USER);
   res.json(user);
 });
 
-app.post('/api/auth/logout', function(req, res) {
+app.post("/api/auth/logout", function(req, res) {
   user = false;
   res.json(user);
 });
@@ -389,7 +393,7 @@ getBestBeforeDatesForExistingProducts = () => {
 
 updateStocks = () => {
   Stock.find({ consumed_date: { $exists: false } })
-    .populate('product')
+    .populate("product")
     .exec()
     .then(stocks => {
       async.eachSeries(stocks, (stock, cb) => {
@@ -411,5 +415,5 @@ updateStocks = () => {
 // setTimeout(updateStocks, 15000);
 
 http.listen(4000, function() {
-  console.log('Example app listening on port 4000!');
+  console.log("Example app listening on port 4000!");
 });

@@ -1,34 +1,12 @@
-import React, { Component } from 'react';
-import { Popover, Avatar } from 'antd';
-import { Col, Row } from 'reactstrap';
-import Scrollbar from '../../components/utility/customScrollBar';
-import { connect } from 'react-redux';
-import IntlMessages from '../../components/utility/intlMessages';
-import TopbarDropdownWrapper from './topbarDropdown.style';
-import RowStock from '../../customApp/components/rowStock';
-
-const demoNotifications = [
-  {
-    id: 1,
-    name: 'David Doe',
-    notification: 'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner'
-  },
-  {
-    id: 2,
-    name: 'Navis Doe',
-    notification: 'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner'
-  },
-  {
-    id: 3,
-    name: 'Emanual Doe',
-    notification: 'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner'
-  },
-  {
-    id: 4,
-    name: 'Dowain Doe',
-    notification: 'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner'
-  }
-];
+import React, { Component } from "react";
+import { Popover, Avatar } from "antd";
+import { Col, Row } from "reactstrap";
+import Scrollbar from "../../components/utility/customScrollBar";
+import { connect } from "react-redux";
+import IntlMessages from "../../components/utility/intlMessages";
+import TopbarDropdownWrapper from "./topbarDropdown.style";
+import RowStock from "../../customApp/components/rowStock";
+import moment from "moment";
 
 class TopbarNotification extends Component {
   constructor(props) {
@@ -53,48 +31,69 @@ class TopbarNotification extends Component {
     return products.find(p => p._id === id);
   };
 
+  getDate = date => {
+    return moment(date).fromNow();
+  };
+
   render() {
     const { customizedTheme, logs, products } = this.props;
     const content = (
-      <TopbarDropdownWrapper className='topbarNotification'>
-        <div className='isoDropdownHeader'>
+      <TopbarDropdownWrapper className="topbarNotification">
+        <div className="isoDropdownHeader">
           <h3>
-            <IntlMessages id='sidebar.notification' />
+            <IntlMessages id="sidebar.notification" />
           </h3>
         </div>
-        <div className='isoDropdownBody'>
+        <div className="isoDropdownBody">
           <Scrollbar style={{ height: 300 }}>
             {logs &&
               products &&
               logs.map(notification => (
-                <a className='isoDropdownListItem' key={notification._id} href='# '>
+                <a
+                  className="isoDropdownListItem"
+                  key={notification._id}
+                  href="# "
+                >
                   <Row>
-                    <Col xs='9'>
-                      <h5 className='p-0'>{`Added 1x ${this.getProduct(notification.product).name}}`}</h5>
+                    <Col xs="9">
+                      <span className="isoDate">
+                        {this.getDate(notification.created_at)}
+                      </span>
+                      <h5 className="p-0">{`Added 1x ${
+                        this.getProduct(notification.product).name
+                      }}`}</h5>
                     </Col>
-                    <Col xs='3'>
-                      <Avatar shape='square' size={64} src={this.getProduct(notification.product).image} />
+                    <Col xs="3">
+                      <Avatar
+                        shape="square"
+                        size={64}
+                        src={this.getProduct(notification.product).image}
+                      />
                     </Col>
                   </Row>
                 </a>
               ))}
           </Scrollbar>
         </div>
-        <a className='isoViewAllBtn' href='# '>
-          <IntlMessages id='topbar.viewAll' />
+        <a className="isoViewAllBtn" href="# ">
+          <IntlMessages id="topbar.viewAll" />
         </a>
       </TopbarDropdownWrapper>
     );
     return (
       <Popover
         content={content}
-        trigger='click'
+        trigger="click"
         visible={this.state.visible}
         onVisibleChange={this.handleVisibleChange}
-        placement='bottomLeft'>
-        <div className='isoIconWrapper'>
-          <i className='ion-android-notifications' style={{ color: customizedTheme.textColor }} />
-          <span>{demoNotifications.length}</span>
+        placement="bottomLeft"
+      >
+        <div className="isoIconWrapper">
+          <i
+            className="ion-android-notifications"
+            style={{ color: customizedTheme.textColor }}
+          />
+          <span>{logs && logs.length}</span>
         </div>
       </Popover>
     );
