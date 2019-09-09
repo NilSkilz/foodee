@@ -104,6 +104,21 @@ class RecipeView extends Component {
       dataIndex: 'name'
     },
     {
+      title: 'Price',
+      render: recipe => {
+        const { products } = this.props;
+        if (products) {
+          let price = 0;
+
+          recipe.ingredients.forEach(ingredient => {
+            const product = products.find(p => p._id === ingredient.product);
+            if (product) price += product.price * ingredient.quantity;
+          });
+          return `£${price}`;
+        }
+      }
+    },
+    {
       title: 'Action',
       key: 'action',
       width: '16%',
@@ -119,7 +134,8 @@ class RecipeView extends Component {
   ];
 
   render() {
-    console.log('Recipes', this.props.recipes);
+    const { products } = this.props;
+    if (!products) return null;
     return (
       <>
         <LayoutContentWrapper className='h-100'>
@@ -143,7 +159,8 @@ class RecipeView extends Component {
 }
 
 const mapStateToProps = state => ({
-  recipes: state.Recipes.all
+  recipes: state.Recipes.all,
+  products: state.Products.all
 });
 
 export default connect(mapStateToProps)(RecipeView);
