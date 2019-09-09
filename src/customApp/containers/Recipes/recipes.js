@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Table, Icon, Button, Input } from "antd";
-import LayoutContentWrapper from "../../../components/utility/layoutWrapper.js";
-import LayoutContent from "../../../components/utility/layoutContent";
-import RecipeModal from "../../components/Modals/recipe";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Table, Icon, Button, Input } from 'antd';
+import LayoutContentWrapper from '../../../components/utility/layoutWrapper.js';
+import LayoutContent from '../../../components/utility/layoutContent';
+import RecipeModal from '../../components/Modals/recipe';
 
 const { Search } = Input;
 
 class RecipeView extends Component {
   state = {
     loading: false,
-    searchText: ""
+    searchText: ''
   };
 
   componentWillReceiveProps(props) {
@@ -22,12 +22,7 @@ class RecipeView extends Component {
   }
 
   getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters
-    }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
           ref={node => {
@@ -35,33 +30,24 @@ class RecipeView extends Component {
           }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
-          onChange={e =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => this.handleSearch(selectedKeys, confirm)}
-          style={{ width: 188, marginBottom: 8, display: "block" }}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
         <Button
-          type="primary"
+          type='primary'
           onClick={() => this.handleSearch(selectedKeys, confirm)}
-          icon="search"
-          size="small"
-          style={{ width: 90, marginRight: 8 }}
-        >
+          icon='search'
+          size='small'
+          style={{ width: 90, marginRight: 8 }}>
           Search
         </Button>
-        <Button
-          onClick={() => this.handleReset(clearFilters)}
-          size="small"
-          style={{ width: 90 }}
-        >
+        <Button onClick={() => this.handleReset(clearFilters)} size='small' style={{ width: 90 }}>
           Reset
         </Button>
       </div>
     ),
-    filterIcon: filtered => (
-      <Icon type="search" style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
+    filterIcon: filtered => <Icon type='search' style={{ color: filtered ? '#1890ff' : undefined }} />,
     onFilter: (value, record) =>
       record[dataIndex]
         .toString()
@@ -82,7 +68,7 @@ class RecipeView extends Component {
 
   handleReset = clearFilters => {
     clearFilters();
-    this.setState({ searchText: "" });
+    this.setState({ searchText: '' });
   };
 
   showRecipe = event => {
@@ -90,7 +76,7 @@ class RecipeView extends Component {
     const recipe = this.props.recipes.find(r => r._id === id);
     if (recipe)
       this.props.dispatch({
-        type: "SHOW_RECIPE",
+        type: 'SHOW_RECIPE',
         recipe
       });
   };
@@ -100,35 +86,44 @@ class RecipeView extends Component {
     const recipe = this.props.recipes.find(r => r._id === id);
     if (recipe)
       this.props.dispatch({
-        type: "EDIT_RECIPE",
+        type: 'EDIT_RECIPE',
         recipe
       });
   };
 
   createRecipe = () => {
     this.props.dispatch({
-      type: "EDIT_RECIPE",
+      type: 'EDIT_RECIPE',
       recipe: {}
     });
   };
 
   columns = [
     {
-      title: "Name",
-      dataIndex: "name"
+      title: 'Name',
+      dataIndex: 'name'
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: '16%',
+      align: 'center',
+      className: 'mr-0 pr-0 pl-0',
+      render: recipe => (
+        <span>
+          <Button className='ml-3' icon='edit' type='link' onClick={this.editRecipe} id={recipe._id}></Button>
+          <Button className='ml-3 mr-0' icon='delete' type='link'></Button>
+        </span>
+      )
     }
   ];
 
   render() {
-    console.log("Recipes", this.props.recipes);
+    console.log('Recipes', this.props.recipes);
     return (
       <>
-        <LayoutContentWrapper className="h-100">
-          <Button
-            className="m-3 float-right"
-            type="primary"
-            onClick={this.createRecipe}
-          >
+        <LayoutContentWrapper className='h-100'>
+          <Button className='m-3 float-right' type='primary' onClick={this.createRecipe}>
             New Recipe
           </Button>
           <LayoutContent>

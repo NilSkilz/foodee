@@ -6,13 +6,13 @@ import { message } from 'antd';
 function* createRecipe({ recipe }) {
   const loading = message.loading('Saving recipe...', 0);
   try {
-    const recipe = yield postRecipe(recipe);
+    const created = yield postRecipe(recipe);
     message.success(`Recipe Saved!`);
-    yield put({ type: 'RECIPE_CREATE_SUCCEEDED', recipe: recipe });
+    yield put({ type: 'RECIPE_CREATE_SUCCEEDED', recipe: created });
   } catch (e) {
     loading();
     message.error(e.message);
-    yield put({ type: 'RECIPE_CREATE_FAILED', recipe: recipe });
+    yield put({ type: 'RECIPE_CREATE_FAILED' });
   }
 }
 export default function* rootSaga() {
@@ -20,6 +20,7 @@ export default function* rootSaga() {
 }
 
 const postRecipe = recipe => {
+  console.log('posting:', recipe);
   Axios.post('/api/recipes/', recipe).then(data => {
     return data.data;
   });
