@@ -12,13 +12,29 @@ const { Search } = Input;
 const menu = (
   <Menu>
     <Menu.Item>
-      <Button type='link'>Consume one</Button>
+      <Button
+        type='link'
+        onClick={() => {
+          console.log('hi');
+        }}>
+        Consume one
+      </Button>
     </Menu.Item>
     <Menu.Item>
       <Button type='link'>Consume all</Button>
     </Menu.Item>
     <Menu.Item>
       <Button type='link'>Mark as spoiled</Button>
+    </Menu.Item>
+    <Menu.Item>
+      <Button
+        type='link'
+        onClick={event => {
+          debugger;
+          console.log(event);
+        }}>
+        Send to Freezer
+      </Button>
     </Menu.Item>
   </Menu>
 );
