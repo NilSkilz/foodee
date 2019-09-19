@@ -7,6 +7,7 @@ var Jimp = require("jimp");
 var nocr = require("nocr");
 var async = require("async");
 var moment = require("moment");
+var Axios = require("axios");
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.json()); // to support JSON-encoded bodies
@@ -37,6 +38,8 @@ handleError = error => {
 //  Products
 // ------------
 
+// Product Creation
+
 app.get("/api/products/:barcode", (req, res) => {
   Product.findOne({ gtin: req.params.barcode })
     .populate({
@@ -45,14 +48,91 @@ app.get("/api/products/:barcode", (req, res) => {
     })
     .exec()
     .then(product => {
-      res.send({
-        total: 1,
-        page: 1,
-        data: product
-      });
+      if (product) {
+        res.send({
+          total: 1,
+          page: 1,
+          data: product
+        });
+      } else {
+        getProductFromLabsAPI(req.params.barcode)
+          .then(product => {
+            res.send({
+              total: 1,
+              page: 1,
+              data: product
+            });
+          })
+          .catch(err => res.send(err));
+      }
     })
     .catch(err => handleError(err));
 });
+
+const getProductFromLabsAPI = barcode => {
+  console.log("Getting from labs API");
+  return Axios.get(`https://dev.tescolabs.com/product/?gtin=${barcode}`, {
+    headers: {
+      "Ocp-Apim-Subscription-Key": "ae8dba96f0f34dbb90e3c8706b4b7b0b"
+    }
+  }).then(({ data }) => {
+    console.log("Got ", data);
+    const { products } = data;
+    if (products && products.length > 0) {
+      return getAdditionalInfoFromLabsAPI(products[0]);
+    } else {
+      throw new Error("Product not found");
+    }
+  });
+};
+
+const getAdditionalInfoFromLabsAPI = product => {
+  const { departmentOptions, superDepartmentOptions } = this.state;
+  return Axios.get(
+    `https://dev.tescolabs.com/grocery/products/?query=${product.description}&offset=0&limit=10`,
+    {
+      headers: {
+        "Ocp-Apim-Subscription-Key": "ae8dba96f0f34dbb90e3c8706b4b7b0b"
+      }
+    }
+  ).then(({ data }) => {
+    const results = _.get(data, "uk.ghs.products.results", []);
+    const item = results.find(item => item.tpnb === parseInt(product.tpnb));
+
+    product.name = product.description;
+
+    if (item) {
+      product.image = item.image;
+      product.department = item.department;
+      product.superDepartment = item.superDepartment;
+      product.price = item.price;
+    } else {
+      product.minimum_stock = 2;
+      product.department = departmentOptions[0]._id;
+      product.superDepartment = superDepartmentOptions[0]._id;
+      throw new Error("Cannot find complete product details");
+    }
+    return saveProduct(product);
+  });
+};
+
+const saveProduct = product => {
+  if (!product._id) {
+    return Axios.post(`/api/products/`, product, {
+      headers: { "Content-Type": "application/json" }
+    }).then(({ data }) => {
+      return addProductToStock(data.data);
+    });
+  } else {
+    return Axios.put(`/api/products/${product._id}`, product, {
+      headers: { "Content-Type": "application/json" }
+    }).then(({ data }) => {
+      return data;
+    });
+  }
+};
+
+// -------
 
 app.get("/api/products/", (req, res) => {
   Product.find(req.query.where)
@@ -60,9 +140,6 @@ app.get("/api/products/", (req, res) => {
       path: "stock",
       match: { consumed_date: { $exists: false } }
     })
-    // .limit(parseInt(req.query.limit))
-    // .skip(parseInt(req.query.skip))
-    // .sort(req.query.sort)
     .exec()
     .then(products => {
       res.send({
@@ -266,7 +343,7 @@ app.post("/api/stock", (req, res) => {
 
 app.get("/api/logs", (req, res) => {
   Log.find({})
-    .limit(40)
+    .limit(10)
     .sort({ created_at: -1 })
     .exec()
     .then(logs => {
