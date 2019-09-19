@@ -42,6 +42,7 @@ getTotalValue = () => {
         let totalValue = 0;
 
         stocks.forEach(stock => {
+          console.log(stock._id);
           if (stock.product.price) {
             totalValue += stock.product.price;
           }

@@ -18,9 +18,36 @@ function* createProduct({ barcode }) {
     yield put({ type: 'PRODUCT_CREATE_FAILED', product: { gtin: barcode } });
   }
 }
+
+function* updateProduct({ product }) {
+  const loading = message.loading('Saving product...', 0);
+  try {
+    const updated = yield putProduct(product);
+    loading();
+    message.success(`Product Updated`);
+    yield put({ type: 'PRODUCT_UPDATE_SUCCEEDED', product: updated });
+  } catch (e) {
+    loading();
+    message.error(e.message);
+    yield put({ type: 'PRODUCT_UPDATE_FAILED' });
+  }
+}
 export default function* rootSaga() {
   yield all([takeEvery(actions.PRODUCT_CREATE, createProduct)]);
+  yield all([takeEvery(actions.PRODUCT_UPDATE, updateProduct)]);
 }
+
+const putProduct = product => {
+  console.log('Updating the product');
+  return Axios.put(`/api/products/${product._id}`, product).then(({ data }) => {
+    console.log('Got:', data.data);
+    if (!data.data) {
+      throw new Error('Something went wrong updating the product');
+    } else {
+      return data.data;
+    }
+  });
+};
 
 const getProductFromAPI = barcode => {
   console.log('Getting product from API');

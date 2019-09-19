@@ -1,6 +1,7 @@
 import Products from './products/reducers';
 import Logs from './logs/reducers';
 import Recipes from './recipes/reducers';
+import Stocks from './stocks/reducers';
 import Departments from './departments/departments';
 import SuperDepartments from './super-departments/super-departments';
 

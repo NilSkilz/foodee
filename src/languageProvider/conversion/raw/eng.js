@@ -480,12 +480,12 @@ Marketing
 Addvertisement
 Consulting
 Development
-210
-Unread Email
-1749
-Image Upload
-3024
-Total Message
+97
+Products
+42
+Low Stock
+0
+Out of Stock
 54
 Orders Post
 Income
