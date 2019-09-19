@@ -254,6 +254,7 @@ class ProductView extends Component {
     if (data && loading) {
       this.setState({ loading: false });
     }
+
     let filtered = data;
     if (searchText) {
       filtered = data.filter(product => product.name.toLowerCase().indexOf(searchText.toLowerCase()) >= 0);
@@ -277,7 +278,7 @@ class ProductView extends Component {
           <LayoutContent>
             <ProductDrawer />
             <ProductModal />
-            <Table columns={this.columns} rowKey={record => record.gtin} dataSource={filtered} loading={loading} />
+            <Table columns={this.columns} rowKey='_id' dataSource={filtered} loading={loading} />
           </LayoutContent>
         </LayoutContentWrapper>
       </>
