@@ -4,6 +4,7 @@ import { Table, Icon, Button, Input } from 'antd';
 import LayoutContentWrapper from '../../../components/utility/layoutWrapper.js';
 import LayoutContent from '../../../components/utility/layoutContent';
 import RecipeModal from '../../components/Modals/recipe';
+import RecipeDrawer from '../../components/Drawers/recipe';
 // import { app } from "firebase";
 
 const { Search } = Input;
@@ -161,8 +162,8 @@ class RecipeView extends Component {
   ];
 
   render() {
-    const { products } = this.props;
-    if (!products) return null;
+    const { recipes } = this.props;
+    if (!recipes) return null;
     return (
       <>
         <LayoutContentWrapper className='h-100'>
@@ -170,6 +171,7 @@ class RecipeView extends Component {
             New Recipe
           </Button>
           <LayoutContent>
+            <RecipeDrawer />
             <RecipeModal />
 
             <Table

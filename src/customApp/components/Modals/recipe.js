@@ -1,8 +1,8 @@
-import React, { Component, Fragment } from "react";
-import { connect } from "react-redux";
-import { Row, Col } from "reactstrap";
-import { Modal, Form, Icon, Button, Input, InputNumber, Select } from "antd";
-import moment from "moment";
+import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
+import { Row, Col } from 'reactstrap';
+import { Modal, Form, Icon, Button, Input, InputNumber, Select } from 'antd';
+import moment from 'moment';
 
 const { Option } = Select;
 
@@ -10,13 +10,14 @@ class RecipeModal extends Component {
   state = { recipe: null };
   componentWillReceiveProps(props) {
     const { editing: recipe } = props;
-    if (recipe) this.setState({ recipe });
+    // if (recipe)
+    this.setState({ recipe });
   }
 
   onClose = () => {
     this.setState({ recipe: null });
     this.props.dispatch({
-      type: "EDIT_RECIPE",
+      type: 'EDIT_RECIPE',
       recipe: null
     });
   };
@@ -55,15 +56,23 @@ class RecipeModal extends Component {
 
   save = () => {
     const { recipe } = this.state;
-    this.props.dispatch({
-      type: "RECIPE_CREATE",
-      recipe
-    });
+    if (!recipe._id) {
+      this.props.dispatch({
+        type: 'RECIPE_CREATE',
+        recipe
+      });
+    } else {
+      this.props.dispatch({
+        type: 'RECIPE_UPDATE',
+        recipe
+      });
+    }
   };
 
   render() {
     const { products } = this.props;
     const { recipe } = this.state;
+    console.log(recipe);
 
     if (recipe) {
       if (!recipe.ingredients) recipe.ingredients = [{}];
@@ -71,48 +80,43 @@ class RecipeModal extends Component {
         <Modal
           title={recipe.name}
           closable={false}
-          visible={recipe}
+          visible={recipe ? true : false}
           onClose={this.onClose}
           footer={[
-            <Button key="Cancel" onClick={this.onClose}>
+            <Button key='Cancel' onClick={this.onClose}>
               Cancel
             </Button>,
-            <Button
-              key="Save"
-              type="primary"
-              loading={false}
-              onClick={this.save}
-            >
+            <Button key='Save' type='primary' loading={false} onClick={this.save}>
               Save
             </Button>
           ]}
           // width='80%'
         >
-          <Form onSubmit={this.handleSubmit} className="">
-            <Form.Item className="p-0 m-0 mb-2">
-              <div className="p-0 m-0" for="name">
+          <Form onSubmit={this.handleSubmit} className=''>
+            <Form.Item className='p-0 m-0 mb-2'>
+              <div className='p-0 m-0' for='name'>
                 Name
               </div>
               <Input
-                value={recipe.name || ""}
-                type="input"
-                name="name"
-                id="name"
+                value={recipe.name || ''}
+                type='input'
+                name='name'
+                id='name'
                 onChange={this.handleChange}
-                size="large"
+                size='large'
               />
             </Form.Item>
 
-            <Row className="pl-3 pr-3">
-              <Form.Item className="p-0 m-0 mb-2 col-6">
-                <div className="p-0 m-0" for="servings">
+            <Row className='pl-3 pr-3'>
+              <Form.Item className='p-0 m-0 mb-2 col-6'>
+                <div className='p-0 m-0' for='servings'>
                   Number of Servings
                 </div>
                 <InputNumber
-                  className="form-control"
-                  id="servings"
-                  name="servings"
-                  size="large"
+                  className='form-control'
+                  id='servings'
+                  name='servings'
+                  size='large'
                   value={recipe.servings}
                   defaultValue={2}
                   onChange={this.handleServingsChange}
@@ -123,37 +127,32 @@ class RecipeModal extends Component {
               return (
                 <Fragment>
                   <Row key={index}>
-                    <Col xs="6">
-                      <Form.Item className="p-0 m-0 mb-2">
-                        <div className="p-0 m-0" for="product">
-                          {index === 0 ? "Product" : null}
+                    <Col xs='6'>
+                      <Form.Item className='p-0 m-0 mb-2'>
+                        <div className='p-0 m-0' for='product'>
+                          {index === 0 ? 'Product' : null}
                         </div>
                       </Form.Item>
                     </Col>
-                    <Col xs="4">
-                      <Form.Item className="p-0 m-0 mb-2 col-6">
-                        <div className="p-0 m-0" for="Number">
-                          {index === 0 ? "Quantity" : null}
+                    <Col xs='4'>
+                      <Form.Item className='p-0 m-0 mb-2 col-6'>
+                        <div className='p-0 m-0' for='Number'>
+                          {index === 0 ? 'Quantity' : null}
                         </div>
                       </Form.Item>
                     </Col>
-                    <Col xs="2"></Col>
+                    <Col xs='2'></Col>
                   </Row>
                   <Row>
-                    <Col xs="6">
-                      <Form.Item className="p-0 m-0 mb-2">
+                    <Col xs='6'>
+                      <Form.Item className='p-0 m-0 mb-2'>
                         <Select
-                          defaultValue="Select Product"
+                          defaultValue='Select Product'
                           onChange={this.selectProduct}
-                          size="large"
-                          id="1"
-                          name="1"
-                          value={
-                            i.product &&
-                            products &&
-                            products.find(p => p._id === i.product).name
-                          }
-                        >
+                          size='large'
+                          id='1'
+                          name='1'
+                          value={i.product && products && products.find(p => p._id === i.product).name}>
                           {products.map(p => (
                             <Option value={p._id} id={index}>
                               {p.name}
@@ -162,37 +161,37 @@ class RecipeModal extends Component {
                         </Select>
                       </Form.Item>
                     </Col>
-                    <Col xs="4">
-                      <Form.Item className="p-0 m-0 mb-2 col-6">
+                    <Col xs='4'>
+                      <Form.Item className='p-0 m-0 mb-2 col-6'>
                         <Input
-                          type="number"
-                          className="form-control"
+                          type='number'
+                          className='form-control'
                           id={index}
                           name={index}
-                          size="large"
+                          size='large'
                           value={i.quantity}
                           defaultValue={1}
                           onChange={this.handleQuantityChange}
                         />
                       </Form.Item>
                     </Col>
-                    <Col xs="2">
-                      <Form.Item className="p-0 m-0 mb-2 col-6">
+                    <Col xs='2'>
+                      <Form.Item className='p-0 m-0 mb-2 col-6'>
                         {recipe.ingredients.length === index + 1 ? (
                           <Icon
-                            type="plus"
+                            type='plus'
                             style={{
-                              display: "inline-block",
-                              verticalAlign: "middle"
+                              display: 'inline-block',
+                              verticalAlign: 'middle'
                             }}
                             onClick={this.addIngredient}
                           />
                         ) : (
                           <Icon
-                            type="delete"
+                            type='delete'
                             style={{
-                              display: "inline-block",
-                              verticalAlign: "middle"
+                              display: 'inline-block',
+                              verticalAlign: 'middle'
                             }}
                             onClick={this.deleteIngredient}
                           />
