@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'),
+var mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
 var StockItemSchema = new Schema({
@@ -10,7 +10,7 @@ var StockItemSchema = new Schema({
 
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
+    ref: "Product",
     required: true
   },
 
@@ -25,6 +25,12 @@ var StockItemSchema = new Schema({
   },
 
   isFrozen: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+
+  isSpoiled: {
     type: Boolean,
     required: true,
     default: false
@@ -58,4 +64,4 @@ var StockItemSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Stock', StockItemSchema);
+module.exports = mongoose.model("Stock", StockItemSchema);

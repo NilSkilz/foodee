@@ -1,15 +1,15 @@
-var express = require('express');
+var express = require("express");
 var app = express();
-var http = require('http').createServer(app);
-var _ = require('lodash');
-var mongoose = require('mongoose');
-var Jimp = require('jimp');
-var nocr = require('nocr');
-var async = require('async');
-var moment = require('moment');
-var Axios = require('axios');
+var http = require("http").createServer(app);
+var _ = require("lodash");
+var mongoose = require("mongoose");
+var Jimp = require("jimp");
+var nocr = require("nocr");
+var async = require("async");
+var moment = require("moment");
+var Axios = require("axios");
 
-var bodyParser = require('body-parser');
+var bodyParser = require("body-parser");
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(
   bodyParser.urlencoded({
@@ -19,16 +19,16 @@ app.use(
 );
 
 // Connect to database
-const uri = 'mongodb://127.0.0.1/grocy-dev';
+const uri = "mongodb://127.0.0.1/grocy-dev";
 
 mongoose.connect(uri, {});
 
-var Product = require('./product/product.model');
-var Stock = require('./stock/stock.model');
-var Department = require('./department/department.model');
-var SuperDepartment = require('./superdepartment/superdepartment.model');
-var Recipe = require('./recipe/recipe.model');
-var Log = require('./log/log.model');
+var Product = require("./product/product.model");
+var Stock = require("./stock/stock.model");
+var Department = require("./department/department.model");
+var SuperDepartment = require("./superdepartment/superdepartment.model");
+var Recipe = require("./recipe/recipe.model");
+var Log = require("./log/log.model");
 
 handleError = error => {
   console.log(error);
@@ -40,10 +40,10 @@ handleError = error => {
 
 // Product Creation
 
-app.get('/api/products/:barcode', (req, res) => {
+app.get("/api/products/:barcode", (req, res) => {
   Product.findOne({ gtin: req.params.barcode })
     .populate({
-      path: 'stock',
+      path: "stock",
       match: { consumed_date: { $exists: false } }
     })
     .exec()
@@ -70,30 +70,33 @@ app.get('/api/products/:barcode', (req, res) => {
 });
 
 const getProductFromLabsAPI = barcode => {
-  console.log('Getting from labs API');
+  console.log("Getting from labs API");
   return Axios.get(`https://dev.tescolabs.com/product/?gtin=${barcode}`, {
     headers: {
-      'Ocp-Apim-Subscription-Key': 'ae8dba96f0f34dbb90e3c8706b4b7b0b'
+      "Ocp-Apim-Subscription-Key": "ae8dba96f0f34dbb90e3c8706b4b7b0b"
     }
   }).then(({ data }) => {
-    console.log('Got ', data);
+    console.log("Got ", data);
     const { products } = data;
     if (products && products.length > 0) {
       return getAdditionalInfoFromLabsAPI(products[0]);
     } else {
-      throw new Error('Product not found');
+      throw new Error("Product not found");
     }
   });
 };
 
 const getAdditionalInfoFromLabsAPI = product => {
   const { departmentOptions, superDepartmentOptions } = this.state;
-  return Axios.get(`https://dev.tescolabs.com/grocery/products/?query=${product.description}&offset=0&limit=10`, {
-    headers: {
-      'Ocp-Apim-Subscription-Key': 'ae8dba96f0f34dbb90e3c8706b4b7b0b'
+  return Axios.get(
+    `https://dev.tescolabs.com/grocery/products/?query=${product.description}&offset=0&limit=10`,
+    {
+      headers: {
+        "Ocp-Apim-Subscription-Key": "ae8dba96f0f34dbb90e3c8706b4b7b0b"
+      }
     }
-  }).then(({ data }) => {
-    const results = _.get(data, 'uk.ghs.products.results', []);
+  ).then(({ data }) => {
+    const results = _.get(data, "uk.ghs.products.results", []);
     const item = results.find(item => item.tpnb === parseInt(product.tpnb));
 
     product.name = product.description;
@@ -107,7 +110,7 @@ const getAdditionalInfoFromLabsAPI = product => {
       product.minimum_stock = 2;
       product.department = departmentOptions[0]._id;
       product.superDepartment = superDepartmentOptions[0]._id;
-      throw new Error('Cannot find complete product details');
+      throw new Error("Cannot find complete product details");
     }
     return saveProduct(product);
   });
@@ -116,13 +119,13 @@ const getAdditionalInfoFromLabsAPI = product => {
 const saveProduct = product => {
   if (!product._id) {
     return Axios.post(`/api/products/`, product, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" }
     }).then(({ data }) => {
       return addProductToStock(data.data);
     });
   } else {
     return Axios.put(`/api/products/${product._id}`, product, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" }
     }).then(({ data }) => {
       return data;
     });
@@ -131,10 +134,10 @@ const saveProduct = product => {
 
 // -------
 
-app.get('/api/products/', (req, res) => {
+app.get("/api/products/", (req, res) => {
   Product.find(req.query.where)
     .populate({
-      path: 'stock',
+      path: "stock",
       match: { consumed_date: { $exists: false } }
     })
     .exec()
@@ -146,7 +149,7 @@ app.get('/api/products/', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put("/api/products/:id", (req, res) => {
   Product.findByIdAndUpdate(req.params.id, req.body)
     .exec()
     .then(data => {
@@ -157,15 +160,15 @@ app.put('/api/products/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete("/api/products/:id", (req, res) => {
   Product.findByIdAndDelete(req.params.id)
     .exec()
     .then(res.status(204).send())
     .catch(err => handleError(err));
 });
 
-app.post('/api/products', (req, res) => {
-  console.log('New Product: ', req.body);
+app.post("/api/products", (req, res) => {
+  console.log("New Product: ", req.body);
   const { department, superDepartment } = req.body;
 
   getDepartment(department)
@@ -238,9 +241,9 @@ getSuperDepartment = superDepartmentName => {
 getBestBeforeDate = (image, id) => {
   return new Promise((resolve, reject) => {
     if (!image) resolve(null);
-    Jimp.read(image.replace('http', 'https').replace('90x90', '540x540'))
+    Jimp.read(image.replace("http", "https").replace("90x90", "540x540"))
       .then(image => {
-        const filename = id ? `images/${id}.png` : 'images/best-before.png';
+        const filename = id ? `images/${id}.png` : "images/best-before.png";
         image
           .crop(363, 0, 177, 177)
           .writeAsync(filename)
@@ -248,21 +251,25 @@ getBestBeforeDate = (image, id) => {
             nocr.decodeFile(filename, function(error, data) {
               if (error) return resolve(null);
               if (data) {
-                const str = data.replace(/\s/g, '');
+                const str = data.replace(/\s/g, "");
 
-                if (str === 'Bestsameday') return resolve({ unit: 'days', value: 1 });
+                if (str === "Bestsameday")
+                  return resolve({ unit: "days", value: 1 });
 
-                if (str.split('+').length === 2) {
-                  const value = str.split('+')[0];
-                  const unit = str.split('+')[1];
-                  if (parseInt(value) !== NaN && (unit === 'days' || unit === 'weeks')) {
+                if (str.split("+").length === 2) {
+                  const value = str.split("+")[0];
+                  const unit = str.split("+")[1];
+                  if (
+                    parseInt(value) !== NaN &&
+                    (unit === "days" || unit === "weeks")
+                  ) {
                     return resolve({ unit, value });
                   } else {
-                    console.log('not recognised', str);
+                    console.log("not recognised", str);
                     resolve(null);
                   }
                 } else {
-                  console.log('cant split', str);
+                  console.log("cant split", str);
                   resolve(null);
                 }
               } else {
@@ -283,8 +290,102 @@ getBestBeforeDate = (image, id) => {
 // ----------------------
 //  Stocks
 // ------------
+app.get("/api/stock/barcode/one/:barcode", (req, res) => {
+  Product.findOne({ gtin: req.params.barcode })
+    .populate("stock")
+    .exec()
+    .then(product => {
+      console.log("Product:", product);
+      // Reduce stock by one
+      if (product.stock.length > 0) {
+        let toRemove = product.stock.find(
+          stockItem => stockItem.consumed_date === undefined
+        );
+        console.log("Original toRemove: ", toRemove);
+        product.stock.forEach(stockItem => {
+          if (
+            !stockItem.consumed_date &&
+            moment(stockItem.purchase_date).isBefore(
+              moment(toRemove.purchase_date)
+            )
+          ) {
+            console.log("settings stock item");
+            toRemove = stockItem;
+          }
+        });
 
-app.put('/api/stock/:id', (req, res) => {
+        console.log("ToRemove: ", toRemove);
+
+        toRemove.consumed_date = new Date();
+        toRemove.save().then(() => {
+          console.log("Sending...");
+          res.send({
+            total: 1,
+            page: 1,
+            data: product
+          });
+        });
+      } else {
+        console.log("no stock!");
+      }
+    });
+});
+
+app.get("/api/stock/barcode/all/:barcode", (req, res) => {
+  Product.findOne({ gtin: req.params.barcode })
+    .populate("stock")
+    .exec()
+    .then(product => {
+      // Reduce stock by all
+      if (!product.stock.length) {
+        product.stock.forEach(stockItem => {
+          if (!stockItem.consumed_date) {
+            stockItem.consumed_date = new Date();
+            stockItem.save();
+          }
+        });
+        res.send({
+          total: 1,
+          page: 1,
+          data: product
+        });
+      }
+    });
+});
+
+app.get("/api/stock/barcode/spoiled/:barcode", (req, res) => {
+  Product.findOne({ gtin: req.params.barcode })
+    .populate("stock")
+    .exec()
+    .then(product => {
+      // Reduce stock by one
+      if (!product.stock.length) {
+        let toRemove = product.stock[0];
+        product.stock.forEach(stockItem => {
+          if (
+            !stockItem.consumed_date &&
+            moment(stockItem.purchase_date).isBefore(
+              moment(toRemove.purchase_date)
+            )
+          ) {
+            toRemove = stockItem;
+          }
+        });
+
+        toRemove.consumed_date = new Date();
+        toRemove.isSpoiled = true;
+        toRemove.save().then(() => {
+          res.send({
+            total: 1,
+            page: 1,
+            data: product
+          });
+        });
+      }
+    });
+});
+
+app.put("/api/stock/:id", (req, res) => {
   Stock.findByIdAndUpdate(req.params.id, req.body)
     .exec()
     .then(stock => {
@@ -307,7 +408,7 @@ app.put('/api/stock/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.post('/api/stock', (req, res) => {
+app.post("/api/stock", (req, res) => {
   req.body._id = new mongoose.Types.ObjectId();
   new Stock(req.body)
     .save()
@@ -334,7 +435,7 @@ app.post('/api/stock', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.get('/api/logs', (req, res) => {
+app.get("/api/logs", (req, res) => {
   Log.find({})
     .limit(10)
     .sort({ created_at: -1 })
@@ -350,7 +451,7 @@ app.get('/api/logs', (req, res) => {
 //  Recipes
 // ------------
 
-app.get('/api/recipes', (req, res) => {
+app.get("/api/recipes", (req, res) => {
   Recipe.find()
     .exec()
     .then(recipes => {
@@ -363,7 +464,7 @@ app.get('/api/recipes', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.post('/api/recipes', (req, res) => {
+app.post("/api/recipes", (req, res) => {
   new Recipe(req.body)
     .save()
     .then(recipe => {
@@ -377,12 +478,12 @@ app.post('/api/recipes', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.put('/api/recipes/:id', (req, res) => {
+app.put("/api/recipes/:id", (req, res) => {
   Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true })
     .exec()
     .then(recipe => {
-      console.log('recd: ', req.body.name);
-      console.log('savd: ', recipe.name);
+      console.log("recd: ", req.body.name);
+      console.log("savd: ", recipe.name);
       res.send({
         total: 1,
         page: 1,
@@ -392,7 +493,7 @@ app.put('/api/recipes/:id', (req, res) => {
     .catch(err => handleError(err));
 });
 
-app.delete('/api/recipes/:id', (req, res) => {
+app.delete("/api/recipes/:id", (req, res) => {
   Recipe.findByIdAndDelete(req.params.id)
     .exec()
     .then(res.status(204).send())
@@ -403,7 +504,7 @@ app.delete('/api/recipes/:id', (req, res) => {
 //  Departments
 // ------------
 
-app.get('/api/departments', (req, res) => {
+app.get("/api/departments", (req, res) => {
   Department.find()
     .exec()
     .then(departments => {
@@ -415,7 +516,7 @@ app.get('/api/departments', (req, res) => {
     });
 });
 
-app.get('/api/superdepartments', (req, res) => {
+app.get("/api/superdepartments", (req, res) => {
   SuperDepartment.find()
     .exec()
     .then(departments => {
@@ -427,16 +528,16 @@ app.get('/api/superdepartments', (req, res) => {
     });
 });
 
-app.get('/api/auth', function(req, res) {
+app.get("/api/auth", function(req, res) {
   res.json(user);
 });
 
-app.post('/api/auth/login', function(req, res) {
+app.post("/api/auth/login", function(req, res) {
   user = _.cloneDeep(LOGGED_IN_USER);
   res.json(user);
 });
 
-app.post('/api/auth/logout', function(req, res) {
+app.post("/api/auth/logout", function(req, res) {
   user = false;
   res.json(user);
 });
@@ -465,7 +566,7 @@ getBestBeforeDatesForExistingProducts = () => {
 
 updateStocks = () => {
   Stock.find({ consumed_date: { $exists: false } })
-    .populate('product')
+    .populate("product")
     .exec()
     .then(stocks => {
       async.eachSeries(stocks, (stock, cb) => {
@@ -487,5 +588,5 @@ updateStocks = () => {
 // setTimeout(updateStocks, 15000);
 
 http.listen(4000, function() {
-  console.log('Example app listening on port 4000!');
+  console.log("Example app listening on port 4000!");
 });
