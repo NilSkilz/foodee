@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { Col, Row } from 'reactstrap';
 import { Drawer } from 'antd';
 import moment from 'moment';
 
@@ -43,33 +44,80 @@ class RecipeDrawer extends Component {
           width='50%'
           onClose={this.onClose}>
           <h6 className='pb-3'>Number of Servings</h6>
-          <h7>{recipe.servings}</h7>
-          <hr></hr>
+          <p>{recipe.servings}</p>
+          <hr />
           <h6 className='pb-3'>Ingredients</h6>
-          {recipe.ingredients.map(ingredient => {
+          {recipe.ingredients.map((ingredient, index) => {
             const product = products.find(p => p._id === ingredient.product);
             if (product) {
               return (
-                <>
-                  <h7>{`${product.name}`}</h7>
-                  <h7 className='float-right pr-5'>{` x ${ingredient.quantity}`}</h7>
-                  {/* <img width='100%' src={product.image.replace('90x90', '540x540')} alt={product.name} /> */}
-                  {/* <div>
-                  <span style={{ fontSize: '20px' }}>{`${this.getRecipeStockCount(product).quantity}`}</span>
-                  <span> in stock</span>
-
-                  <span style={{ fontSize: '20px' }}>{` / ${product.minimum_stock}`}</span>
-                  <span> required</span>
-                </div>
-                <div>
-                  <span className='mr-3'> Current price:</span>
-                  <span style={{ fontWeight: '200' }}>{`£${product.price ? product.price.toFixed(2) : ' n/a'}`}</span>
-                </div>
-                <div>
-                  <span className='mr-3'> Last purchased:</span>
-                  <span style={{ fontWeight: '200' }}>{this.getLastPurchased(product)}</span>
-                </div> */}
-                </>
+                <Row key={index}>
+                  <Col>
+                    <p>{`${product.name}`}</p>
+                  </Col>
+                  <Col>
+                    <p className='float-right pr-5'>{` x ${ingredient.quantity}`}</p>
+                  </Col>
+                </Row>
+              );
+            }
+          })}
+          <hr />
+          {recipe.ingredients.map((ingredient, index) => {
+            const product = products.find(p => p._id === ingredient.product);
+            if (product && product.calcNutrition) {
+              return (
+                <Fragment>
+                  <Row key={index}>
+                    <Col>
+                      <strong>Measurement:</strong>
+                    </Col>
+                    <Col>
+                      <strong className=' pr-5'>per 100g</strong>
+                    </Col>
+                    <Col>
+                      <strong className=' pr-5'>per serving</strong>
+                    </Col>
+                  </Row>
+                  <Row key={index}>
+                    <Col>
+                      <p>Energy (kJ):</p>
+                    </Col>
+                    <Col>
+                      <p className=' pr-5'>
+                        {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kJ)').valuePer100 *
+                          ingredient.quantity}
+                      </p>
+                    </Col>
+                    <Col>
+                      <p className=' pr-5'>
+                        {(product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kJ)').valuePer100 /
+                          100) *
+                          product.qtyContents.quantity *
+                          recipe.servings}
+                      </p>
+                    </Col>
+                  </Row>
+                  <Row key={index}>
+                    <Col>
+                      <p>Calories (kcal):</p>
+                    </Col>
+                    <Col>
+                      <p className=' pr-5'>
+                        {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kcal)').valuePer100 *
+                          ingredient.quantity}
+                      </p>
+                    </Col>
+                    <Col>
+                      <p className=' pr-5'>
+                        {(product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kcal)').valuePer100 /
+                          100) *
+                          product.qtyContents.quantity *
+                          recipe.servings}
+                      </p>
+                    </Col>
+                  </Row>
+                </Fragment>
               );
             }
           })}

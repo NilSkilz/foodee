@@ -15,14 +15,6 @@ class RecipeView extends Component {
     searchText: ''
   };
 
-  componentWillReceiveProps(props) {
-    console.log(props);
-  }
-
-  componentDidUpdate() {
-    console.log(this.props);
-  }
-
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
@@ -176,8 +168,11 @@ class RecipeView extends Component {
 
             <Table
               columns={this.columns}
-              rowKey={record => record._id}
-              dataSource={this.props.recipes}
+              // rowKey={record => record._id}
+              // onRow={record => ({ rowKey: record._id })}
+              dataSource={this.props.recipes.map(recipe => {
+                return { ...recipe, key: recipe._id };
+              })}
               loading={this.state.loading}
             />
           </LayoutContent>

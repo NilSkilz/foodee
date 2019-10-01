@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Drawer } from 'antd';
 import moment from 'moment';
@@ -37,22 +37,91 @@ class ProductDrawer extends Component {
     if (product) {
       return (
         <Drawer title={product.name} placement='right' closable={false} visible={product} onClose={this.onClose}>
-          <img width='100%' src={product.image.replace('90x90', '540x540')} alt={product.name} />
           <div>
-            <span style={{ fontSize: '20px' }}>{`${this.getProductStockCount(product).quantity}`}</span>
-            <span> in stock</span>
+            <img width='100%' src={product.image.replace('90x90', '540x540')} alt={product.name} />
+            <div>
+              <span style={{ fontSize: '20px' }}>{`${this.getProductStockCount(product).quantity}`}</span>
+              <span> in stock</span>
 
-            <span style={{ fontSize: '20px' }}>{` / ${product.minimum_stock}`}</span>
-            <span> required</span>
+              <span style={{ fontSize: '20px' }}>{` / ${product.minimum_stock}`}</span>
+              <span> required</span>
+            </div>
+            <div>
+              <span className='mr-3'> Current price:</span>
+              <span style={{ fontWeight: '200' }}>{`£${product.price ? product.price.toFixed(2) : ' n/a'}`}</span>
+            </div>
+            <div>
+              <span className='mr-3'> Last purchased:</span>
+              <span style={{ fontWeight: '200' }}>{this.getLastPurchased(product)}</span>
+            </div>
           </div>
-          <div>
-            <span className='mr-3'> Current price:</span>
-            <span style={{ fontWeight: '200' }}>{`£${product.price ? product.price.toFixed(2) : ' n/a'}`}</span>
-          </div>
-          <div>
-            <span className='mr-3'> Last purchased:</span>
-            <span style={{ fontWeight: '200' }}>{this.getLastPurchased(product)}</span>
-          </div>
+          <hr />
+          {product.calcNutrition ? (
+            <Fragment>
+              <div>
+                <span className='mr-3'>Energy (kJ):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kJ)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Calories (kcal):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kcal)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Fat (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Fat (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Saturates (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Saturates (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Carbohydrate (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Carbohydrate (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Sugars (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Sugars (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Fibre (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Fibre (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Protein (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Protein (g)').valuePer100}
+                </span>
+              </div>
+
+              <div>
+                <span className='mr-3'>Salt (g):</span>
+                <span style={{ fontWeight: '200', float: 'right' }}>
+                  {product.calcNutrition.calcNutrients.find(item => item.name === 'Salt (g)').valuePer100}
+                </span>
+              </div>
+            </Fragment>
+          ) : null}
         </Drawer>
       );
     } else {

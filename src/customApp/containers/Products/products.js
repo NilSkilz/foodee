@@ -26,10 +26,6 @@ class ProductView extends Component {
     this.setState({ data: this.props.products });
   }
 
-  componentWillReceiveProps(props) {
-    this.setState({ data: props.products });
-  }
-
   componentDidUpdate(prevProps) {
     if (this.props.products !== prevProps.products) {
       this.setState({ data: this.props.products });

@@ -17,6 +17,7 @@ class DataLoader extends Component {
 
   getProducts = () => {
     Axios.get('/api/products').then(({ data }) => {
+      console.log('DAta:', data);
       this.props.dispatch({
         type: 'PRODUCT_FETCH_ALL',
         products: data.results
