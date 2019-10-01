@@ -1,13 +1,13 @@
-import React, { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
-import { Col, Row } from 'reactstrap';
-import { Drawer } from 'antd';
-import moment from 'moment';
+import React, { Component, Fragment } from "react";
+import { connect } from "react-redux";
+import { Col, Row } from "reactstrap";
+import { Drawer } from "antd";
+import moment from "moment";
 
 class RecipeDrawer extends Component {
   onClose = () => {
     this.props.dispatch({
-      type: 'SHOW_RECIPE',
+      type: "SHOW_RECIPE",
       recipe: null
     });
   };
@@ -29,7 +29,49 @@ class RecipeDrawer extends Component {
     if (date) {
       return moment(date).fromNow();
     }
-    return 'n/a';
+    return "n/a";
+  };
+
+  getNutrientPer100g = (product, nutrient) => {
+    return parseInt(
+      product.calcNutrition.calcNutrients.find(item => item.name === nutrient)
+        .valuePer100
+    );
+  };
+
+  getNutrientPerServing = (product, nutrient) => {
+    const { showing: recipe } = this.props;
+    return parseInt(
+      ((product.calcNutrition.calcNutrients.find(item => item.name === nutrient)
+        .valuePer100 /
+        100) *
+        product.pkgDimensions[0].weight) /
+        recipe.servings
+    );
+  };
+
+  getTotalNutrientPer100g = nutrient => {
+    const { showing: recipe, products } = this.props;
+    let count = 0;
+    recipe.ingredients.forEach(ingredient => {
+      const product = products.find(p => p._id === ingredient.product);
+      if (product && product.calcNutrition) {
+        count += parseInt(this.getNutrientPer100g(product, nutrient));
+      }
+    });
+    return count;
+  };
+
+  getTotalNutrientPerServing = nutrient => {
+    const { showing: recipe, products } = this.props;
+    let count = 0;
+    recipe.ingredients.forEach(ingredient => {
+      const product = products.find(p => p._id === ingredient.product);
+      if (product && product.calcNutrition) {
+        count += parseInt(this.getNutrientPerServing(product, nutrient));
+      }
+    });
+    return count;
   };
 
   render() {
@@ -38,15 +80,16 @@ class RecipeDrawer extends Component {
       return (
         <Drawer
           title={recipe.name}
-          placement='right'
+          placement="right"
           closable={false}
           visible={recipe ? true : false}
-          width='50%'
-          onClose={this.onClose}>
-          <h6 className='pb-3'>Number of Servings</h6>
+          width="50%"
+          onClose={this.onClose}
+        >
+          <h6 className="pb-3">Number of Servings</h6>
           <p>{recipe.servings}</p>
           <hr />
-          <h6 className='pb-3'>Ingredients</h6>
+          <h6 className="pb-3">Ingredients</h6>
           {recipe.ingredients.map((ingredient, index) => {
             const product = products.find(p => p._id === ingredient.product);
             if (product) {
@@ -56,70 +99,52 @@ class RecipeDrawer extends Component {
                     <p>{`${product.name}`}</p>
                   </Col>
                   <Col>
-                    <p className='float-right pr-5'>{` x ${ingredient.quantity}`}</p>
+                    <p className="float-right pr-5">{` x ${ingredient.quantity}`}</p>
                   </Col>
                 </Row>
               );
             }
           })}
           <hr />
-          {recipe.ingredients.map((ingredient, index) => {
-            const product = products.find(p => p._id === ingredient.product);
-            if (product && product.calcNutrition) {
-              return (
-                <Fragment>
-                  <Row key={index}>
-                    <Col>
-                      <strong>Measurement:</strong>
-                    </Col>
-                    <Col>
-                      <strong className=' pr-5'>per 100g</strong>
-                    </Col>
-                    <Col>
-                      <strong className=' pr-5'>per serving</strong>
-                    </Col>
-                  </Row>
-                  <Row key={index}>
-                    <Col>
-                      <p>Energy (kJ):</p>
-                    </Col>
-                    <Col>
-                      <p className=' pr-5'>
-                        {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kJ)').valuePer100 *
-                          ingredient.quantity}
-                      </p>
-                    </Col>
-                    <Col>
-                      <p className=' pr-5'>
-                        {(product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kJ)').valuePer100 /
-                          100) *
-                          product.qtyContents.quantity *
-                          recipe.servings}
-                      </p>
-                    </Col>
-                  </Row>
-                  <Row key={index}>
-                    <Col>
-                      <p>Calories (kcal):</p>
-                    </Col>
-                    <Col>
-                      <p className=' pr-5'>
-                        {product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kcal)').valuePer100 *
-                          ingredient.quantity}
-                      </p>
-                    </Col>
-                    <Col>
-                      <p className=' pr-5'>
-                        {(product.calcNutrition.calcNutrients.find(item => item.name === 'Energy (kcal)').valuePer100 /
-                          100) *
-                          product.qtyContents.quantity *
-                          recipe.servings}
-                      </p>
-                    </Col>
-                  </Row>
-                </Fragment>
-              );
-            }
+          <Row>
+            <Col>
+              <strong>Nutrient</strong>
+            </Col>
+            <Col>
+              <strong className=" pr-5">per 100g</strong>
+            </Col>
+            <Col>
+              <strong className=" pr-5">per serving</strong>
+            </Col>
+          </Row>
+          {[
+            "Energy (kJ)",
+            "Energy (kcal)",
+            "Fat (g)",
+            "Saturates (g)",
+            "Carbohydrate (g)",
+            "Sugars (g)",
+            "Fibre (g)",
+            "Protein (g)",
+            "Salt (g)"
+          ].map(nutrient => {
+            return (
+              <Row>
+                <Col>
+                  <p>{nutrient}</p>
+                </Col>
+                <Col>
+                  <p className="pr-5">
+                    {this.getTotalNutrientPer100g(nutrient)}
+                  </p>
+                </Col>
+                <Col>
+                  <p className="pr-5">
+                    {this.getTotalNutrientPerServing(nutrient)}
+                  </p>
+                </Col>
+              </Row>
+            );
           })}
         </Drawer>
       );
