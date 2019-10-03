@@ -1,16 +1,10 @@
-var mongoose = require("mongoose"),
+var mongoose = require('mongoose'),
   Schema = mongoose.Schema;
 
 var StockItemSchema = new Schema({
-  _id: {
-    type: Schema.ObjectId,
-    required: true,
-    default: mongoose.Types.ObjectId()
-  },
-
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    ref: 'Product',
     required: true
   },
 
@@ -64,4 +58,4 @@ var StockItemSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model("Stock", StockItemSchema);
+module.exports = mongoose.model('Stock', StockItemSchema);

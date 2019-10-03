@@ -1,5 +1,10 @@
 const options = [
   {
+    key: '',
+    label: 'sidebar.dashboard',
+    leftIcon: 'ion-home'
+  },
+  {
     key: 'products',
     label: 'sidebar.products',
     leftIcon: 'ion-home'

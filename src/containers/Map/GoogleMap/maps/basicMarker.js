@@ -30,7 +30,7 @@ class BasicMarkerMap extends Component {
       }
     });
     const RichMarker = require('js-rich-marker');
-    const InfoBubble = require('js-info-bubble');
+    // const InfoBubble = require('js-info-bubble');
     posts.map(post => {
       const marker = RichMarker
         ? new RichMarker.RichMarker({
@@ -47,31 +47,31 @@ class BasicMarkerMap extends Component {
             animation: google.maps.Animation.DROP,
             content: Marker(post.marker)
           });
-      const infoBubble = new InfoBubble({
-        maxWidth: 280,
-        minWidth: 280,
-        maxHeight: 255,
-        minHeight: 255,
-        shadowStyle: 0,
-        padding: 0,
-        backgroundColor: '#ffffff',
-        position: new google.maps.LatLng(post.lat, post.lng),
-        borderRadius: 0,
-        arrowSize: 10,
-        borderWidth: 0,
-        disableAnimation: true,
-        autopanMargin: 0,
-        hideCloseButton: false,
-        arrowStyle: 0,
-        content: MarkerInfoWindow(post)
-      });
-      marker.addListener('click', function() {
-        if (self.infowindow) {
-          self.infowindow.close();
-        }
-        infoBubble.open(Map, marker);
-        self.infowindow = infoBubble;
-      });
+      // const infoBubble = new InfoBubble({
+      //   maxWidth: 280,
+      //   minWidth: 280,
+      //   maxHeight: 255,
+      //   minHeight: 255,
+      //   shadowStyle: 0,
+      //   padding: 0,
+      //   backgroundColor: '#ffffff',
+      //   position: new google.maps.LatLng(post.lat, post.lng),
+      //   borderRadius: 0,
+      //   arrowSize: 10,
+      //   borderWidth: 0,
+      //   disableAnimation: true,
+      //   autopanMargin: 0,
+      //   hideCloseButton: false,
+      //   arrowStyle: 0,
+      //   content: MarkerInfoWindow(post)
+      // });
+      // marker.addListener('click', function() {
+      //   if (self.infowindow) {
+      //     self.infowindow.close();
+      //   }
+      //   infoBubble.open(Map, marker);
+      //   self.infowindow = infoBubble;
+      // });
       return true;
     });
   }
@@ -82,11 +82,7 @@ class BasicMarkerMap extends Component {
       <div>
         {loaded ? (
           <BasicMapWrapper>
-            <div
-              className="isoGoogleMap"
-              style={{ height: '650px', width: '100%' }}
-              ref={this.loadMap}
-            />
+            <div className='isoGoogleMap' style={{ height: '650px', width: '100%' }} ref={this.loadMap} />
           </BasicMapWrapper>
         ) : (
           <span>API is Loading</span>

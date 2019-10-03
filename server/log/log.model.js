@@ -2,12 +2,6 @@ var mongoose = require('mongoose'),
   Schema = mongoose.Schema;
 
 var LogSchema = new Schema({
-  _id: {
-    type: Schema.ObjectId,
-    required: true,
-    default: new mongoose.Types.ObjectId()
-  },
-
   message: {
     type: String,
     required: false

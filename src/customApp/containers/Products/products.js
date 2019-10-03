@@ -117,7 +117,7 @@ class ProductView extends Component {
       sorter: (a, b) => a.name - b.name,
       render: product => {
         return (
-          <div onClick={this.showProduct} id={product._id}>
+          <div style={{ cursor: 'pointer' }} onClick={this.showProduct} id={product._id}>
             {product.name}
           </div>
         );

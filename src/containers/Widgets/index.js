@@ -1,28 +1,31 @@
-import React, { Component, Fragment } from "react";
-import { connect } from "react-redux";
-import clone from "clone";
-import { Row, Col, Table } from "antd";
-import moment from "moment";
-import LayoutWrapper from "../../components/utility/layoutWrapper.js";
-import basicStyle from "../../settings/basicStyle";
-import IsoWidgetsWrapper from "./widgets-wrapper";
-import IsoWidgetBox from "./widget-box";
-import CardWidget from "./card/card-widgets";
-import ProgressWidget from "./progress/progress-widget";
-import SingleProgressWidget from "./progress/progress-single";
-import ReportsWidget from "./report/report-widget";
-import StickerWidget from "./sticker/sticker-widget";
-import SaleWidget from "./sale/sale-widget";
-import VCardWidget from "./vCard/vCard-widget";
-import SocialWidget from "./social-widget/social-widget";
-import SocialProfile from "./social-widget/social-profile-icon";
-import userpic from "../../image/user1.png";
-import { TableViews, tableinfos, dataList } from "../Tables/antTables";
-import * as rechartConfigs from "../Charts/recharts/config";
-import { StackedAreaChart } from "../Charts/recharts/charts/";
-import { GoogleChart } from "../Charts/googleChart/";
-import * as googleChartConfigs from "../Charts/googleChart/config";
-import IntlMessages from "../../components/utility/intlMessages";
+import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
+import clone from 'clone';
+import { Row, Col, Table } from 'antd';
+import moment from 'moment';
+import LayoutWrapper from '../../components/utility/layoutWrapper.js';
+import basicStyle from '../../settings/basicStyle';
+import IsoWidgetsWrapper from './widgets-wrapper';
+import IsoWidgetBox from './widget-box';
+import ProductDrawer from '../../customApp/components/Drawers/product';
+import RecipeDrawer from '../../customApp/components/Drawers/recipe';
+
+import CardWidget from './card/card-widgets';
+import ProgressWidget from './progress/progress-widget';
+import SingleProgressWidget from './progress/progress-single';
+import ReportsWidget from './report/report-widget';
+import StickerWidget from './sticker/sticker-widget';
+import SaleWidget from './sale/sale-widget';
+import VCardWidget from './vCard/vCard-widget';
+import SocialWidget from './social-widget/social-widget';
+import SocialProfile from './social-widget/social-profile-icon';
+import userpic from '../../image/user1.png';
+import { TableViews, tableinfos, dataList } from '../Tables/antTables';
+import * as rechartConfigs from '../Charts/recharts/config';
+import { StackedAreaChart } from '../Charts/recharts/charts/';
+import { GoogleChart } from '../Charts/googleChart/';
+import * as googleChartConfigs from '../Charts/googleChart/config';
+import IntlMessages from '../../components/utility/intlMessages';
 
 const tableDataList = clone(dataList);
 tableDataList.size = 5;
@@ -30,16 +33,33 @@ tableDataList.size = 5;
 class Dashboard extends Component {
   state = { loading: true };
 
+  showProduct = event => {
+    const { id } = event.target;
+    const product = this.props.products.find(p => p._id === id);
+    if (product)
+      this.props.dispatch({
+        type: 'SHOW_PRODUCT',
+        product
+      });
+  };
+
+  showRecipe = event => {
+    const { id } = event.target;
+    const recipe = this.props.recipes.find(r => r._id === id);
+    if (recipe)
+      this.props.dispatch({
+        type: 'SHOW_RECIPE',
+        recipe
+      });
+  };
+
   getProductsOrderedByBestBeforeDate = () => {
     const { products } = this.props;
 
     if (!products) return [];
 
     const productsWithBestBefore = products.filter(
-      product =>
-        product.stock.find(
-          stock => stock.best_before_date !== undefined && !stock.isFrozen
-        ) !== undefined
+      product => product.stock.find(stock => stock.best_before_date !== undefined && !stock.isFrozen) !== undefined
     );
 
     const sorted = productsWithBestBefore.sort((a, b) => {
@@ -53,12 +73,12 @@ class Dashboard extends Component {
       if (first.isBefore(last)) return -1;
       return 1;
     });
-    console.log("productsWithBestBefore", productsWithBestBefore);
+    console.log('productsWithBestBefore', productsWithBestBefore);
     return productsWithBestBefore;
   };
 
   isProductInStock = ({ stock = [] }) => {
-    console.log("instock", stock.length > 0);
+    console.log('instock', stock.length > 0);
     return stock.length > 0;
   };
 
@@ -70,12 +90,8 @@ class Dashboard extends Component {
     const arr = recipes.filter(recipe => {
       let inStock = true;
       recipe.ingredients.forEach(ingredient => {
-        console.log("PROD:", ingredient.product);
-        if (
-          !this.isProductInStock(
-            products.find(product => product._id === ingredient.product)
-          )
-        ) {
+        console.log('PROD:', ingredient.product);
+        if (!this.isProductInStock(products.find(product => product._id === ingredient.product))) {
           inStock = false;
         }
       });
@@ -90,10 +106,10 @@ class Dashboard extends Component {
     const { loading } = this.state;
     const { rowStyle, colStyle } = basicStyle;
     const wisgetPageStyle = {
-      display: "flex",
-      flexFlow: "row wrap",
-      alignItems: "flex-start",
-      overflow: "hidden"
+      display: 'flex',
+      flexFlow: 'row wrap',
+      alignItems: 'flex-start',
+      overflow: 'hidden'
     };
 
     const { products, recipes } = this.props;
@@ -111,14 +127,18 @@ class Dashboard extends Component {
 
     const columns = [
       {
-        title: "Name",
+        title: 'Name',
         render: product => {
-          return <div id={product._id}>{product.name}</div>;
+          return (
+            <div style={{ cursor: 'pointer' }} onClick={this.showProduct} id={product._id}>
+              {product.name}
+            </div>
+          );
         }
       },
       {
-        title: "Best Before",
-        width: "30%",
+        title: 'Best Before',
+        width: '30%',
         render: product => {
           let frozen = false;
           const lastStock = product.stock.find(stock => {
@@ -131,14 +151,11 @@ class Dashboard extends Component {
           if (lastStock) {
             const { purchaseDate } = lastStock;
             if (product.best_before) {
-              const bestBefore = moment(purchaseDate).add(
-                product.best_before.value,
-                product.best_before.unit
-              );
+              const bestBefore = moment(purchaseDate).add(product.best_before.value, product.best_before.unit);
               return bestBefore.fromNow();
             }
           }
-          return "-";
+          return '-';
         }
       }
     ];
@@ -149,17 +166,19 @@ class Dashboard extends Component {
     };
     return (
       <LayoutWrapper>
+        <ProductDrawer />
+        <RecipeDrawer />
         <div style={wisgetPageStyle}>
-          <Row style={rowStyle} gutter={0} justify="start">
+          <Row style={rowStyle} gutter={0} justify='start'>
             <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={"0"}
-                  text={"Products"}
-                  icon="ion-checkmark"
-                  fontColor="#ffffff"
-                  bgColor="#7266BA"
+                  number={'0'}
+                  text={'Products'}
+                  icon='ion-checkmark'
+                  fontColor='#ffffff'
+                  bgColor='#7266BA'
                 />
               </IsoWidgetsWrapper>
             </Col>
@@ -168,11 +187,11 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={"0"}
-                  text={"Low Stock"}
-                  icon="ion-android-cart  "
-                  fontColor="#ffffff"
-                  bgColor="#42A5F6"
+                  number={'0'}
+                  text={'Low Stock'}
+                  icon='ion-android-cart  '
+                  fontColor='#ffffff'
+                  bgColor='#42A5F6'
                 />
               </IsoWidgetsWrapper>
             </Col>
@@ -181,11 +200,11 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={"£0"}
-                  text={"Total Value"}
-                  icon="ion-cash"
-                  fontColor="#ffffff"
-                  bgColor="#7ED320"
+                  number={'£0'}
+                  text={'Total Value'}
+                  icon='ion-cash'
+                  fontColor='#ffffff'
+                  bgColor='#7ED320'
                 />
               </IsoWidgetsWrapper>
             </Col>
@@ -194,38 +213,40 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={"0"}
-                  text={"Out of Stock"}
-                  icon="ion-close"
-                  fontColor="#ffffff"
-                  bgColor="#F75D81"
+                  number={'0'}
+                  text={'Out of Stock'}
+                  icon='ion-close'
+                  fontColor='#ffffff'
+                  bgColor='#F75D81'
                 />
               </IsoWidgetsWrapper>
             </Col>
           </Row>
-          <Row style={rowStyle} gutter={0} justify="start">
+          <Row style={rowStyle} gutter={0} justify='start'>
             <Col lg={8} md={12} sm={24} xs={24} style={colStyle}>
               <IsoWidgetsWrapper>
                 {/* Report Widget */}
                 <ReportsWidget
-                  label={"Recipes in Stock"}
-                  details={
-                    "You have the ingredients available to make these recipes"
-                  }
-                >
+                  label={'Recipes in Stock'}
+                  details={'You have the ingredients available to make these recipes'}>
                   {recipes && (
                     <Table
-                      // showHeader={false}
+                      showHeader={false}
+                      size='medium'
                       pagination={false}
                       columns={[
                         {
-                          title: "Name",
+                          title: 'Name',
                           render: recipe => {
-                            return <div>{recipe.name}</div>;
+                            return (
+                              <div style={{ cursor: 'pointer' }} onClick={this.showRecipe} id={recipe._id}>
+                                {recipe.name}
+                              </div>
+                            );
                           }
                         },
                         {
-                          title: "",
+                          title: '',
                           render: recipe => {
                             return <div>serves {recipe.servings}</div>;
                           }
@@ -237,15 +258,6 @@ class Dashboard extends Component {
                       scroll={{ y: 330 }}
                     />
                   )}
-                  {/* {this.getRecipiesWithStock().map(recipe => {
-                    console.log("RECIPE:", recipe);
-                    return (
-                      <Row className="pb-3">
-                        <Col span={20}>{recipe.name}</Col>
-                        <Col span={4}>Serves {recipe.servings}</Col>
-                      </Row>
-                    );
-                  })} */}
                 </ReportsWidget>
               </IsoWidgetsWrapper>
             </Col>
@@ -253,11 +265,12 @@ class Dashboard extends Component {
             <Col lg={16} md={12} sm={24} xs={24} style={colStyle}>
               <IsoWidgetsWrapper>
                 <IsoWidgetBox>
-                  <h5 className="pb-3">Expiring Soon</h5>
+                  <h5 className='pb-3'>Expiring Soon</h5>
                   {/* TABLE */}
                   {products && (
                     <Table
-                      // showHeader={false}
+                      showHeader={false}
+                      size='medium'
                       pagination={false}
                       columns={columns}
                       rowKey={record => record._id}

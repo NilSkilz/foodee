@@ -5,7 +5,7 @@ import LayoutContentWrapper from '../../../components/utility/layoutWrapper.js';
 import LayoutContent from '../../../components/utility/layoutContent';
 import RecipeModal from '../../components/Modals/recipe';
 import RecipeDrawer from '../../components/Drawers/recipe';
-// import { app } from "firebase";
+import RowStock from '../../components/rowStock';
 
 const { Search } = Input;
 
@@ -65,6 +65,11 @@ class RecipeView extends Component {
     this.setState({ searchText: '' });
   };
 
+  isProductInStock = ({ stock = [] }) => {
+    console.log('instock', stock.length > 0);
+    return stock.length > 0;
+  };
+
   showRecipe = event => {
     const { id } = event.target;
     const recipe = this.props.recipes.find(r => r._id === id);
@@ -92,23 +97,28 @@ class RecipeView extends Component {
     });
   };
 
-  showRecipe = event => {
-    const { id } = event.target;
-    const recipe = this.props.recipes.find(r => r._id === id);
-    if (recipe)
-      this.props.dispatch({
-        type: 'SHOW_RECIPE',
-        recipe
-      });
-  };
-
   columns = [
+    {
+      title: '',
+      render: recipe => {
+        let inStock = true;
+        recipe.ingredients.forEach(ingredient => {
+          console.log('PROD:', ingredient.product);
+          if (!this.isProductInStock(this.props.products.find(product => product._id === ingredient.product))) {
+            inStock = false;
+          }
+        });
+        if (inStock) return <RowStock status='success' />;
+        return <RowStock status='error' />;
+      },
+      className: 'p-0'
+    },
     {
       title: 'Name',
       // dataIndex: "name",
       render: recipe => {
         return (
-          <div onClick={this.showRecipe} id={recipe._id}>
+          <div style={{ cursor: 'pointer' }} onClick={this.showRecipe} id={recipe._id}>
             {recipe.name}
           </div>
         );

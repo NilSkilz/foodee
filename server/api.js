@@ -57,7 +57,6 @@ app.get('/api/products/:barcode', (req, res) => {
             data: [product]
           });
           new Log({
-            _id: new mongoose.Types.ObjectId(),
             message: `Added 1 x ${product.name}`,
             product: product
           }).save();
@@ -72,7 +71,6 @@ app.get('/api/products/:barcode', (req, res) => {
               data: [product]
             });
             new Log({
-              _id: new mongoose.Types.ObjectId(),
               message: `Added 1 x ${product.name}`,
               product: product
             }).save();
@@ -167,7 +165,6 @@ const addProductToStock = prod => {
       .startOf('day')
       .add(prod.best_before.value, prod.best_before.unit);
   }
-  payload._id = new mongoose.Types.ObjectId();
   return new Stock(payload)
     .save()
     .then(data =>
@@ -232,8 +229,7 @@ app.post('/api/products', (req, res) => {
             ...req.body,
             department: dept._id,
             superDepartment: superDept._id,
-            best_before: bestBefore ? bestBefore : undefined,
-            _id: new mongoose.Types.ObjectId()
+            best_before: bestBefore ? bestBefore : undefined
           })
             .save()
             .then(data => {
@@ -258,7 +254,6 @@ getDepartment = departmentName => {
       .then(dept => {
         if (!dept) {
           new Department({
-            _id: new mongoose.Types.ObjectId(),
             name: departmentName
           })
             .save()
@@ -278,7 +273,6 @@ getSuperDepartment = superDepartmentName => {
       .then(dept => {
         if (!dept) {
           new SuperDepartment({
-            _id: new mongoose.Types.ObjectId(),
             name: superDepartmentName
           })
             .save()
@@ -360,7 +354,6 @@ app.get('/api/stock/barcode/one/:barcode', (req, res) => {
             data: [product]
           });
           new Log({
-            _id: new mongoose.Types.ObjectId(),
             message: `Consumed 1 x ${product.name}`,
             product: product
           }).save();
@@ -390,7 +383,6 @@ app.get('/api/stock/barcode/all/:barcode', (req, res) => {
           data: [product]
         });
         new Log({
-          _id: new mongoose.Types.ObjectId(),
           message: `Consumed all ${product.name}`,
           product: product
         }).save();
@@ -422,7 +414,6 @@ app.get('/api/stock/barcode/spoiled/:barcode', (req, res) => {
             data: [product]
           });
           new Log({
-            _id: new mongoose.Types.ObjectId(),
             message: `Marked 1 x ${product.name} as spoiled`,
             product: product
           }).save();
