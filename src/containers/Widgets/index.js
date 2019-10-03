@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { connect } from "react-redux";
 import clone from "clone";
 import { Row, Col, Table } from "antd";
@@ -33,6 +33,8 @@ class Dashboard extends Component {
   getProductsOrderedByBestBeforeDate = () => {
     const { products } = this.props;
 
+    if (!products) return [];
+
     const productsWithBestBefore = products.filter(
       product =>
         product.stock.find(
@@ -53,6 +55,34 @@ class Dashboard extends Component {
     });
     console.log("productsWithBestBefore", productsWithBestBefore);
     return productsWithBestBefore;
+  };
+
+  isProductInStock = ({ stock = [] }) => {
+    console.log("instock", stock.length > 0);
+    return stock.length > 0;
+  };
+
+  getRecipiesWithStock = () => {
+    const { products, recipes } = this.props;
+
+    if (!products || !recipes) return [];
+
+    const arr = recipes.filter(recipe => {
+      let inStock = true;
+      recipe.ingredients.forEach(ingredient => {
+        console.log("PROD:", ingredient.product);
+        if (
+          !this.isProductInStock(
+            products.find(product => product._id === ingredient.product)
+          )
+        ) {
+          inStock = false;
+        }
+      });
+      if (inStock) return recipe;
+    });
+    console.log(arr);
+    return arr;
   };
 
   render() {
@@ -89,25 +119,6 @@ class Dashboard extends Component {
       {
         title: "Best Before",
         width: "30%",
-        // sortOrder: "ascend",
-        // sorter: (a, b) => {
-        //   const aa = a.stock.find(stock => {
-        //     if (!stock.isFrozen) return stock;
-        //   });
-        //   const bb = b.stock.find(stock => {
-        //     if (!stock.isFrozen) return stock;
-        //   });
-
-        //   if (!aa.best_before_date) return 1;
-        //   if (!bb.best_before_date) return -1;
-
-        //   const first = moment(aa.best_before_date);
-        //   const last = moment(bb.best_before_date);
-
-        //   if (first.isSame(last)) return 0;
-        //   if (first.isBefore(last)) return -1;
-        //   return 1;
-        // },
         render: product => {
           let frozen = false;
           const lastStock = product.stock.find(stock => {
@@ -202,42 +213,39 @@ class Dashboard extends Component {
                     "You have the ingredients available to make these recipes"
                   }
                 >
-                  <SingleProgressWidget
-                    label={
-                      <IntlMessages id="widget.singleprogresswidget1.label" />
-                    }
-                    percent={70}
-                    barHeight={7}
-                    status="active"
-                    info={true} // Boolean: true, false
-                  />
-                  <SingleProgressWidget
-                    label={
-                      <IntlMessages id="widget.singleprogresswidget2.label" />
-                    }
-                    percent={80}
-                    barHeight={7}
-                    status="active"
-                    info={true} // Boolean: true, false
-                  />
-                  <SingleProgressWidget
-                    label={
-                      <IntlMessages id="widget.singleprogresswidget3.label" />
-                    }
-                    percent={40}
-                    barHeight={7}
-                    status="active"
-                    info={true} // Boolean: true, false
-                  />
-                  <SingleProgressWidget
-                    label={
-                      <IntlMessages id="widget.singleprogresswidget4.label" />
-                    }
-                    percent={60}
-                    barHeight={7}
-                    status="active"
-                    info={true} // Boolean: true, false
-                  />
+                  {recipes && (
+                    <Table
+                      // showHeader={false}
+                      pagination={false}
+                      columns={[
+                        {
+                          title: "Name",
+                          render: recipe => {
+                            return <div>{recipe.name}</div>;
+                          }
+                        },
+                        {
+                          title: "",
+                          render: recipe => {
+                            return <div>serves {recipe.servings}</div>;
+                          }
+                        }
+                      ]}
+                      rowKey={record => record._id}
+                      dataSource={this.getRecipiesWithStock()}
+                      loading={loading}
+                      scroll={{ y: 330 }}
+                    />
+                  )}
+                  {/* {this.getRecipiesWithStock().map(recipe => {
+                    console.log("RECIPE:", recipe);
+                    return (
+                      <Row className="pb-3">
+                        <Col span={20}>{recipe.name}</Col>
+                        <Col span={4}>Serves {recipe.servings}</Col>
+                      </Row>
+                    );
+                  })} */}
                 </ReportsWidget>
               </IsoWidgetsWrapper>
             </Col>
