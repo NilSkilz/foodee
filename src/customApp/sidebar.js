@@ -13,6 +13,11 @@ const options = [
     key: 'recipes',
     label: 'sidebar.recipes',
     leftIcon: 'ion-pizza'
+  },
+  {
+    key: 'shoppinglist',
+    label: 'sidebar.shoppinglist',
+    leftIcon: 'ion-pizza'
   }
 ];
 export default options;

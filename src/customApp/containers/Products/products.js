@@ -213,11 +213,7 @@ class ProductView extends Component {
     return (
       <Menu>
         <Menu.Item>
-          <Button
-            type='link'
-            onClick={() => {
-              console.log('hi');
-            }}>
+          <Button type='link' onClick={() => {}}>
             Consume one
           </Button>
         </Menu.Item>

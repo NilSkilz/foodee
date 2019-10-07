@@ -72,7 +72,6 @@ class RecipeModal extends Component {
   render() {
     const { products } = this.props;
     const { recipe } = this.state;
-    console.log(recipe);
 
     if (recipe) {
       if (!recipe.ingredients) recipe.ingredients = [{}];

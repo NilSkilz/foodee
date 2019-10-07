@@ -29,6 +29,7 @@ var Department = require('./department/department.model');
 var SuperDepartment = require('./superdepartment/superdepartment.model');
 var Recipe = require('./recipe/recipe.model');
 var Log = require('./log/log.model');
+var Metric = require('./metric/metric.model');
 
 handleError = error => {
   console.log(error);
@@ -511,6 +512,23 @@ app.get('/api/superdepartments', (req, res) => {
         total: departments.length,
         page: 1,
         data: departments
+      });
+    });
+});
+
+app.get('/api/metrics', function(req, res) {
+  Metric.find({
+    created_at: {
+      $gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 30)
+    }
+  })
+    .sort({ date: -1 })
+    .exec()
+    .then(metrics => {
+      res.send({
+        total: metrics.length,
+        page: 1,
+        data: metrics
       });
     });
 });

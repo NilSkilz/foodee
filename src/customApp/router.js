@@ -8,6 +8,10 @@ const routes = [
   {
     path: 'recipes',
     component: asyncComponent(() => import('./containers/Recipes/recipes'))
+  },
+  {
+    path: 'shoppinglist',
+    component: asyncComponent(() => import('./containers/ShoppingList/shoppingList'))
   }
 ];
 export default routes;

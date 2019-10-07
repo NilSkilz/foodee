@@ -5,6 +5,7 @@ const DEFAULT_SETTINGS = {
   recipes: [],
   departments: [],
   superDepartments: [],
+  metrics: [],
   logs: []
 };
 

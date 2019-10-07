@@ -9,6 +9,10 @@ import IsoWidgetsWrapper from './widgets-wrapper';
 import IsoWidgetBox from './widget-box';
 import ProductDrawer from '../../customApp/components/Drawers/product';
 import RecipeDrawer from '../../customApp/components/Drawers/recipe';
+import { Doughnut } from 'react-chartjs-2';
+import Box from '../../components/utility/box';
+import ContentHolder from '../../components/utility/contentHolder';
+import FrappeChart from 'frappe-charts/dist/frappe-charts.min.esm';
 
 import CardWidget from './card/card-widgets';
 import ProgressWidget from './progress/progress-widget';
@@ -32,6 +36,30 @@ tableDataList.size = 5;
 
 class Dashboard extends Component {
   state = { loading: true };
+
+  getID = () => {
+    const { metrics } = this.props;
+    if (!metrics) return;
+    setTimeout(this.createChart, 1000);
+    return 'chart';
+  };
+
+  createChart = () => {
+    new FrappeChart({
+      header: 'Line Chart',
+      title: '',
+      parent: '#chart',
+      parentId: 'chart',
+      type: 'line',
+      data: this.getGraphData(),
+      show_dots: 0,
+      heatline: 1,
+      region_fill: 1,
+      height: 250
+      // format_tooltip_x: d => (d + '').toUpperCase(),
+      // format_tooltip_y: d => d + ' pts'
+    });
+  };
 
   showProduct = event => {
     const { id } = event.target;
@@ -73,12 +101,10 @@ class Dashboard extends Component {
       if (first.isBefore(last)) return -1;
       return 1;
     });
-    console.log('productsWithBestBefore', productsWithBestBefore);
     return productsWithBestBefore;
   };
 
   isProductInStock = ({ stock = [] }) => {
-    console.log('instock', stock.length > 0);
     return stock.length > 0;
   };
 
@@ -90,15 +116,161 @@ class Dashboard extends Component {
     const arr = recipes.filter(recipe => {
       let inStock = true;
       recipe.ingredients.forEach(ingredient => {
-        console.log('PROD:', ingredient.product);
         if (!this.isProductInStock(products.find(product => product._id === ingredient.product))) {
           inStock = false;
         }
       });
       if (inStock) return recipe;
     });
-    console.log(arr);
     return arr;
+  };
+
+  getRandomInt = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  getMetric = type => {
+    const { metrics } = this.props;
+    if (!metrics) return 0;
+    return metrics.find(metric => metric.type === type).value;
+  };
+
+  getLocationBarChart = () => {
+    const { products } = this.props;
+    let totalCount = 0;
+    let freezerCount = 0;
+
+    products.forEach(product => {
+      product.stock.forEach(stock => {
+        if (stock.isFrozen) {
+          freezerCount++;
+        }
+        totalCount++;
+      });
+    });
+
+    return {
+      labels: ['Freezer', 'Cupboard'],
+      datasets: [
+        {
+          data: [freezerCount, totalCount - freezerCount],
+          backgroundColor: ['#7266BA', '#48A6F2'],
+          hoverBackgroundColor: ['#7266BA', '#48A6F2']
+        }
+      ]
+    };
+  };
+
+  getProductBarChart = () => {
+    const { metrics } = this.props;
+    if (!metrics) return {};
+    return {
+      labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+      datasets: [
+        {
+          data: [
+            this.getMetric('product_in_stock_count'),
+            this.getMetric('product_low_stock_count'),
+            this.getMetric('product_out_of_stock_count')
+          ],
+          backgroundColor: ['#7266BA', '#48A6F2', '#F75D81'],
+          hoverBackgroundColor: ['#7266BA', '#48A6F2', '#F75D81']
+        }
+      ]
+    };
+  };
+
+  getGraphData = () => {
+    const { metrics } = this.props;
+    const obj = {};
+
+    obj.labels = [];
+    obj.datasets = [];
+
+    const productMetrics = metrics.filter(metric => metric.type === 'product_count');
+    const inStockMetrics = metrics.filter(metric => metric.type === 'product_in_stock_count');
+    const outOfStockMetrics = metrics.filter(metric => metric.type === 'product_out_of_stock_count');
+
+    const products = {
+      name: 'Products',
+      chartType: 'line',
+      values: []
+    };
+
+    const inStock = { name: 'In Stock', chartType: 'line', values: [] };
+
+    const outStock = { name: 'Out of Stock', chartType: 'line', values: [] };
+
+    for (var i = 0; i < 30; i++) {
+      const day = moment()
+        .subtract(i, 'days')
+        .startOf('day');
+
+      const data = {};
+      const productMetric = productMetrics.find(metric =>
+        moment(metric.created_at)
+          .startOf('day')
+          .isSame(day)
+      );
+      const inStockMetric = inStockMetrics.find(metric =>
+        moment(metric.created_at)
+          .startOf('day')
+          .isSame(day)
+      );
+      const outOfStockMetric = outOfStockMetrics.find(metric =>
+        moment(metric.created_at)
+          .startOf('day')
+          .isSame(day)
+      );
+
+      obj.labels.push(day.format('Do MMM'));
+
+      console.log('inStockMetric', inStockMetric);
+
+      products.values.push(productMetric ? productMetric.value : 0);
+      inStock.values.push(inStockMetric ? inStockMetric.value : 0);
+      outStock.values.push(outOfStockMetric ? outOfStockMetric.value : 0);
+    }
+
+    products.values = products.values.reverse();
+    inStock.values = inStock.values.reverse();
+    outStock.values = outStock.values.reverse();
+
+    obj.datasets.push(products);
+    obj.datasets.push(inStock);
+    obj.datasets.push(outStock);
+
+    obj.labels = obj.labels.reverse();
+
+    console.log('OBJ:', obj);
+
+    return obj;
+  };
+
+  getWidth = () => {
+    let returnValue = 500;
+
+    if (window.innerWidth < 1200) returnValue = 400;
+    if (window.innerWidth < 992) returnValue = 500;
+    if (window.innerWidth < 768) returnValue = 500;
+    if (window.innerWidth < 576) returnValue = 400;
+    if (window.innerWidth < 480) returnValue = 300;
+
+    console.log(window.innerWidth);
+    return returnValue;
+  };
+
+  getHeight = () => {
+    let returnValue = 270;
+
+    if (window.innerWidth < 1200) returnValue = 400;
+    if (window.innerWidth < 992) returnValue = 500;
+    if (window.innerWidth < 768) returnValue = 500;
+    if (window.innerWidth < 576) returnValue = 400;
+    if (window.innerWidth < 480) returnValue = 300;
+
+    console.log(window.innerWidth);
+    return returnValue;
   };
 
   render() {
@@ -118,12 +290,12 @@ class Dashboard extends Component {
       this.setState({ loading: false });
     }
 
-    // const chartEvents = [
-    //   {
-    //     eventName: "select",
-    //     callback(Chart) {}
-    //   }
-    // ];
+    const chartEvents = [
+      {
+        eventName: 'select',
+        callback(Chart) {}
+      }
+    ];
 
     const columns = [
       {
@@ -160,10 +332,22 @@ class Dashboard extends Component {
       }
     ];
 
-    const stackConfig = {
-      ...rechartConfigs.StackedAreaChart,
-      width: window.innerWidth < 450 ? 300 : 500
+    const config = {
+      componentName: 'StackedAreaChart',
+      key: 'StackedAreaChart',
+      title: 'Stacked Area Chart',
+      width: 350,
+      height: 350,
+      colors: ['#BAA6CA', '#B7DCFA', '#FFE69A', '#788195'],
+      datas: this.getGraphData()
     };
+
+    const stackConfig = {
+      ...config,
+      width: this.getWidth(),
+      height: this.getHeight()
+    };
+
     return (
       <LayoutWrapper>
         <ProductDrawer />
@@ -174,7 +358,7 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={'0'}
+                  number={this.getMetric('product_count')}
                   text={'Products'}
                   icon='ion-checkmark'
                   fontColor='#ffffff'
@@ -187,7 +371,7 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={'0'}
+                  number={this.getMetric('product_low_stock_count')}
                   text={'Low Stock'}
                   icon='ion-android-cart  '
                   fontColor='#ffffff'
@@ -213,7 +397,7 @@ class Dashboard extends Component {
               <IsoWidgetsWrapper>
                 {/* Sticker Widget */}
                 <StickerWidget
-                  number={'0'}
+                  number={this.getMetric('product_out_of_stock_count')}
                   text={'Out of Stock'}
                   icon='ion-close'
                   fontColor='#ffffff'
@@ -284,210 +468,31 @@ class Dashboard extends Component {
             </Col>
           </Row>
 
-          {
-            // <Row style={rowStyle} gutter={0} justify="start">
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* Sale Widget */}
-            //       <SaleWidget
-            //         label={<IntlMessages id="widget.salewidget1.label" />}
-            //         price={<IntlMessages id="widget.salewidget1.price" />}
-            //         details={<IntlMessages id="widget.salewidget1.details" />}
-            //         fontColor="#F75D81"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* Sale Widget */}
-            //       <SaleWidget
-            //         label={<IntlMessages id="widget.salewidget2.label" />}
-            //         price={<IntlMessages id="widget.salewidget2.price" />}
-            //         details={<IntlMessages id="widget.salewidget2.details" />}
-            //         fontColor="#F75D81"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* Sale Widget */}
-            //       <SaleWidget
-            //         label={<IntlMessages id="widget.salewidget3.label" />}
-            //         price={<IntlMessages id="widget.salewidget3.price" />}
-            //         details={<IntlMessages id="widget.salewidget3.details" />}
-            //         fontColor="#F75D81"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* Sale Widget */}
-            //       <SaleWidget
-            //         label={<IntlMessages id="widget.salewidget4.label" />}
-            //         price={<IntlMessages id="widget.salewidget4.price" />}
-            //         details={<IntlMessages id="widget.salewidget4.details" />}
-            //         fontColor="#F75D81"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            // </Row>
-            // <Row style={rowStyle} gutter={0} justify="start">
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper gutterBottom={20}>
-            //       {/* Card Widget */}
-            //       <CardWidget
-            //         icon="ion-android-chat"
-            //         iconcolor="#42A5F5"
-            //         number={<IntlMessages id="widget.cardwidget1.number" />}
-            //         text={<IntlMessages id="widget.cardwidget1.text" />}
-            //       />
-            //     </IsoWidgetsWrapper>
-            //     <IsoWidgetsWrapper gutterBottom={20}>
-            //       {/* Card Widget */}
-            //       <CardWidget
-            //         icon="ion-music-note"
-            //         iconcolor="#F75D81"
-            //         number={<IntlMessages id="widget.cardwidget2.number" />}
-            //         text={<IntlMessages id="widget.cardwidget2.text" />}
-            //       />
-            //     </IsoWidgetsWrapper>
-            //     <IsoWidgetsWrapper>
-            //       {/* Card Widget */}
-            //       <CardWidget
-            //         icon="ion-trophy"
-            //         iconcolor="#FEAC01"
-            //         number={<IntlMessages id="widget.cardwidget3.number" />}
-            //         text={<IntlMessages id="widget.cardwidget3.text" />}
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={6} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper gutterBottom={20}>
-            //       {/* Progress Widget */}
-            //       <ProgressWidget
-            //         label={<IntlMessages id="widget.progresswidget1.label" />}
-            //         details={<IntlMessages id="widget.progresswidget1.details" />}
-            //         icon="ion-archive"
-            //         iconcolor="#4482FF"
-            //         percent={50}
-            //         barHeight={7}
-            //         status="active"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //     <IsoWidgetsWrapper gutterBottom={20}>
-            //       {/* Progress Widget */}
-            //       <ProgressWidget
-            //         label={<IntlMessages id="widget.progresswidget2.label" />}
-            //         details={<IntlMessages id="widget.progresswidget2.details" />}
-            //         icon="ion-pie-graph"
-            //         iconcolor="#F75D81"
-            //         percent={80}
-            //         barHeight={7}
-            //         status="active"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //     <IsoWidgetsWrapper>
-            //       {/* Progress Widget */}
-            //       <ProgressWidget
-            //         label={<IntlMessages id="widget.progresswidget3.label" />}
-            //         details={<IntlMessages id="widget.progresswidget3.details" />}
-            //         icon="ion-android-download"
-            //         iconcolor="#494982"
-            //         percent={65}
-            //         barHeight={7}
-            //         status="active"
-            //       />
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={12} md={24} sm={24} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       <IsoWidgetBox height={455} style={{ overflow: "hidden" }}>
-            //         <StackedAreaChart {...stackConfig} />
-            //       </IsoWidgetBox>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            // </Row>
-            // <Row style={rowStyle} gutter={0} justify="start">
-            //   <Col md={12} sm={24} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       <IsoWidgetBox height={470} style={{ overflow: "hidden" }}>
-            //         <GoogleChart
-            //           {...googleChartConfigs.BarChart}
-            //           chartEvents={chartEvents}
-            //         />
-            //       </IsoWidgetBox>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col md={12} sm={24} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       <IsoWidgetBox height={470} style={{ overflow: "hidden" }}>
-            //         <GoogleChart {...googleChartConfigs.Histogram} />
-            //       </IsoWidgetBox>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            // </Row>
-            // <Row style={rowStyle} gutter={0} justify="start">
-            //   <Col lg={8} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* VCard Widget */}
-            //       <VCardWidget
-            //         style={{ height: "450px" }}
-            //         src={userpic}
-            //         alt="Jhon"
-            //         name={<IntlMessages id="widget.vcardwidget.name" />}
-            //         title={<IntlMessages id="widget.vcardwidget.title" />}
-            //         description={
-            //           <IntlMessages id="widget.vcardwidget.description" />
-            //         }
-            //       >
-            //         <SocialWidget>
-            //           <SocialProfile
-            //             url="#"
-            //             icon="ion-social-facebook"
-            //             iconcolor="#3b5998"
-            //           />
-            //           <SocialProfile
-            //             url="#"
-            //             icon="ion-social-twitter"
-            //             iconcolor="#00aced"
-            //           />
-            //           <SocialProfile
-            //             url="#"
-            //             icon="ion-social-googleplus"
-            //             iconcolor="#dd4b39"
-            //           />
-            //           <SocialProfile
-            //             url="#"
-            //             icon="ion-social-linkedin-outline"
-            //             iconcolor="#007bb6"
-            //           />
-            //           <SocialProfile
-            //             url="#"
-            //             icon="ion-social-dribbble-outline"
-            //             iconcolor="#ea4c89"
-            //           />
-            //         </SocialWidget>
-            //       </VCardWidget>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={8} md={12} sm={12} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       {/* Chart */}
-            //       <IsoWidgetBox height={450} style={{ overflow: "hidden" }}>
-            //         <GoogleChart {...googleChartConfigs.TrendLines} />
-            //       </IsoWidgetBox>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            //   <Col lg={8} md={24} sm={24} xs={24} style={colStyle}>
-            //     <IsoWidgetsWrapper>
-            //       <IsoWidgetBox height={450} style={{ overflow: "hidden" }}>
-            //         {/* Google Bar Chart */}
-            //         <GoogleChart {...googleChartConfigs.ComboChart} />
-            //       </IsoWidgetBox>
-            //     </IsoWidgetsWrapper>
-            //   </Col>
-            // </Row>
-          }
+          <Row style={rowStyle} gutter={0} justify='start'>
+            <Col xl={12} lg={12} md={24} sm={24} xs={24} style={colStyle}>
+              <IsoWidgetsWrapper>
+                <ReportsWidget label={'Products'} details={'Hover over any segment for further details'}>
+                  <Doughnut data={this.getProductBarChart} />;
+                </ReportsWidget>
+              </IsoWidgetsWrapper>
+            </Col>
+            <Col xl={12} lg={12} md={24} sm={24} xs={24} style={colStyle}>
+              <IsoWidgetsWrapper>
+                <ReportsWidget label={'Location'} details={'Hover over any segment for further details'}>
+                  <Doughnut data={this.getLocationBarChart} />;
+                </ReportsWidget>
+              </IsoWidgetsWrapper>
+            </Col>
+          </Row>
+          <Row style={rowStyle} gutter={0} justify='start'>
+            <Col xl={24} lg={24} md={24} sm={24} xs={24} style={colStyle}>
+              <IsoWidgetsWrapper>
+                <ReportsWidget label={'Products'}>
+                  <div id={this.getID()} />
+                </ReportsWidget>
+              </IsoWidgetsWrapper>
+            </Col>
+          </Row>
         </div>
       </LayoutWrapper>
     );
@@ -496,7 +501,8 @@ class Dashboard extends Component {
 
 const mapStateToProps = state => ({
   products: state.Products.all,
-  recipes: state.Recipes.all
+  recipes: state.Recipes.all,
+  metrics: state.Metrics.all
 });
 
 export default connect(mapStateToProps)(Dashboard);

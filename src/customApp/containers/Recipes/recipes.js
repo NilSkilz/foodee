@@ -56,7 +56,6 @@ class RecipeView extends Component {
 
   handleSearch = (selectedKeys, confirm) => {
     confirm();
-    console.log(selectedKeys);
     this.setState({ searchText: selectedKeys[0] });
   };
 
@@ -66,7 +65,6 @@ class RecipeView extends Component {
   };
 
   isProductInStock = ({ stock = [] }) => {
-    console.log('instock', stock.length > 0);
     return stock.length > 0;
   };
 
@@ -103,7 +101,6 @@ class RecipeView extends Component {
       render: recipe => {
         let inStock = true;
         recipe.ingredients.forEach(ingredient => {
-          console.log('PROD:', ingredient.product);
           if (!this.isProductInStock(this.props.products.find(product => product._id === ingredient.product))) {
             inStock = false;
           }

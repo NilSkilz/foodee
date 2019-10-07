@@ -13,6 +13,7 @@ class DataLoader extends Component {
     this.getLogs();
     this.getDepartments();
     this.getSuperDepartments();
+    this.getMetrics();
   };
 
   getProducts = () => {
@@ -64,15 +65,19 @@ class DataLoader extends Component {
     });
   };
 
+  getMetrics = () => {
+    Axios.get('/api/metrics').then(({ data }) => {
+      this.props.dispatch({
+        type: 'METRICS_FETCH_ALL',
+        metrics: data.data
+      });
+      this.setState({ metrics: data.data });
+    });
+  };
+
   render() {
     return null;
   }
 }
 
-const mapStateToProps = state => ({
-  products: state.products,
-  recipes: state.recipes,
-  logs: state.logs
-});
-
-export default connect(mapStateToProps)(DataLoader);
+export default connect()(DataLoader);
